@@ -21624,7 +21624,7 @@ function ere() {
 
 function c9b() {
     this.a = new YSc;
-    b9b(this, '/marvin4js-license.cxl')
+    b9b(this, '')
 }
 
 function f3b(a) {
