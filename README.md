@@ -1,4 +1,4 @@
-![Marvin JS](public/imgs/marvin_js.png)
+![Marvin JS](public/imgs/marvinjs.png)
 
 # 功能
 
