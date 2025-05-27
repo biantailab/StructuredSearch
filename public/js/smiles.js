@@ -203,11 +203,9 @@ document.addEventListener('keydown', function(event) {
 });
 
 function searchHNMR() {
-    const smiles = document.getElementById('smilesInput').value;
-    if (!smiles) {
-        alert('请输入SMILES结构式');
-        return;
+    const smiles = document.getElementById('smilesInput');
+    if (smilesInput?.value) {
+        const searchUrl = `https://www.nmrdb.org/new_predictor/index.shtml?v=v2.157.0&smiles=${encodeURIComponent(smilesInput.value)}`;
+        window.open(searchUrl, '_blank');
     }
-    // 使用新的预测器页面
-    window.open(`https://www.nmrdb.org/new_predictor/index.shtml?v=v2.157.0&smiles=${encodeURIComponent(smiles)}`, '_blank');
 }
