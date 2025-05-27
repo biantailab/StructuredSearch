@@ -201,3 +201,13 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+function searchHNMR() {
+    const smiles = document.getElementById('smilesInput').value;
+    if (!smiles) {
+        alert('请输入SMILES结构式');
+        return;
+    }
+    // 使用新的预测器页面
+    window.open(`https://www.nmrdb.org/new_predictor/index.shtml?v=v2.157.0&smiles=${encodeURIComponent(smiles)}`, '_blank');
+}
