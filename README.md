@@ -3,4 +3,5 @@
 # 功能
 
 - smiles与结构式互相转换
-- 搜索连接PubChem
+- PubChem搜索
+- HNMR搜索
