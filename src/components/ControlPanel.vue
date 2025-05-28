@@ -122,7 +122,9 @@ export default {
 }
 
 .smiles-input {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 .button-group {
