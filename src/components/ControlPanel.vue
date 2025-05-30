@@ -5,11 +5,17 @@
         type="text" 
         id="smilesInput"
         v-model="smilesValue" 
-        placeholder="输入SMILES" 
+        placeholder="SMILES" 
         @input="handleInput"
         class="smiles-input"
       >
       <div class="button-group">
+        <select @change="loadExample" class="example-select">
+          <option value="">Example:</option>
+          <option value="C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1">Benzyl titanium</option>
+          <option value="O=C(O)C[C@H](CC(C)C)CN">Pregabalin</option>
+          <option value="CNCCC(C1=CC=CC=C1)OC2=CC=C(C=C2)C(F)(F)F">Fluoxetine</option>
+        </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
         <button @click="handlePubChem">PubChem</button>
@@ -78,6 +84,10 @@ export default {
           '*'
         );
       }
+      const selectElement = document.querySelector('.example-select');
+      if (selectElement) {
+        selectElement.value = '';
+      }
     },
 
     handleCopy() {
@@ -97,6 +107,14 @@ export default {
       if (this.smilesValue) {
         const searchUrl = `https://www.nmrdb.org/new_predictor/index.shtml?v=v2.157.0&smiles=${encodeURIComponent(this.smilesValue)}`;
         window.open(searchUrl, '_blank');
+      }
+    },
+
+    loadExample(event) {
+      const value = event.target.value;
+      if (value) {
+        this.smilesValue = value;
+        this.sendSmilesToMarvin(value);
       }
     }
   }
@@ -131,5 +149,22 @@ export default {
   display: flex;
   justify-content: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 400px) {
+  .example-select {
+    width: 100%;
+  }
+  
+  .button-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .button-group button {
+    flex: 1;
+    min-width: 60px;
+  }
 }
 </style> 
