@@ -35,4 +35,17 @@ export default {
   flex-direction: column;
   align-items: center;
 }
+@media screen and (max-width: 425px) {
+  .control-panel {
+    height: 75vh;
+    margin-bottom: 0;
+    padding: 2px;
+  }
+  
+  .marvin-frame {
+    width: 100%;
+    height: 75vh;
+    border: none;
+  }
+}
 </style> 
