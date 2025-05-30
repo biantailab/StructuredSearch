@@ -1,7 +1,7 @@
 // Define the default location of webservices
 
 function getDefaultServicesPrefix() {
-    var servername = "https://chem.smiles.ip-ddns.com"; //var servername = "http://dev.swissparam.ch:8080";
+    var servername = "https://marvinjs.benzyl-titanium.workers.dev/";
     var webapp = "";
     return servername + webapp;
 }
