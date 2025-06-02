@@ -18,6 +18,7 @@
         </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
+        <button @click="handleGetCAS">CAS</button>
         <button @click="handlePubChem">PubChem</button>
         <button @click="handleHNMR">HNMR</button>
       </div>
@@ -116,6 +117,62 @@ export default {
         this.smilesValue = value;
         this.sendSmilesToMarvin(value);
       }
+    },
+
+    async handleGetCAS() {
+      if (!this.smilesValue) {
+        return;
+      }
+
+      try {
+        console.log('正在查询 CAS，SMILES:', this.smilesValue);
+        
+        // 通过SMILES获取PubChem CID
+        const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(this.smilesValue)}/cids/JSON`;
+        console.log('PubChem 搜索 URL:', searchUrl);
+        
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) {
+          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
+        }
+        
+        const searchData = await searchResponse.json();
+        if (!searchData.IdentifierList?.CID?.[0]) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        
+        const cid = searchData.IdentifierList.CID[0];
+        console.log('找到 PubChem CID:', cid);
+        
+        // 使用CID获取CAS
+        const casUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
+        const casResponse = await fetch(casUrl);
+        if (!casResponse.ok) {
+          throw new Error(`CAS 查询失败: ${casResponse.status}`);
+        }
+        
+        const casData = await casResponse.json();
+        const synonyms = casData.InformationList?.Information?.[0]?.Synonym || [];
+        
+        // 查找CAS 
+        const casNumber = synonyms.find(syn => /^\d+-\d+-\d+$/.test(syn));
+        
+        if (casNumber) {
+          try {
+            await navigator.clipboard.writeText(casNumber);
+            alert(`CAS ${casNumber} 已复制`);
+          } catch (copyError) {
+            console.error('复制失败:', copyError);
+            alert('复制失败，请手动复制');
+          }
+        } else {
+          alert('未找到 CAS 号');
+        }
+      } catch (error) {
+        console.error('获取 CAS 时出错:', error);
+        alert('获取 CAS 失败，请检查网络连接');
+      }
     }
   }
 }
@@ -141,7 +198,7 @@ export default {
 
 .smiles-input {
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   box-sizing: border-box;
 }
 
@@ -152,7 +209,7 @@ export default {
   flex-wrap: wrap;
 }
 
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 460px) {
   .example-select {
     width: 100%;
   }

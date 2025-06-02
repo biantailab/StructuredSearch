@@ -5,6 +5,7 @@
 - smiles与结构式互相转换
 - PubChem搜索
 - HNMR搜索
+- 获取CAS
 
 ## 新增
 
