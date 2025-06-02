@@ -162,9 +162,29 @@ export default {
           try {
             await navigator.clipboard.writeText(casNumber);
             alert(`CAS ${casNumber} 已复制`);
-          } catch (copyError) {
-            console.error('复制失败:', copyError);
-            alert('复制失败，请手动复制');
+          } catch (err) {
+            try {
+              const textArea = document.createElement('textarea');
+              textArea.value = casNumber;
+              textArea.style.position = 'fixed';
+              textArea.style.left = '-999999px';
+              textArea.style.top = '-999999px';
+              document.body.appendChild(textArea);
+              textArea.focus();
+              textArea.select();
+              
+              const successful = document.execCommand('copy');
+              document.body.removeChild(textArea);
+              
+              if (successful) {
+                alert(`CAS ${casNumber} 已复制`);
+              } else {
+                alert('复制失败，请手动复制');
+              }
+            } catch (fallbackErr) {
+              console.error('复制失败:', fallbackErr);
+              alert('复制失败，请手动复制');
+            }
           }
         } else {
           alert('未找到 CAS 号');
