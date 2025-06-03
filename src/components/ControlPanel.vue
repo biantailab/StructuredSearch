@@ -24,8 +24,8 @@
         <button @click="handlePubChem">PubChem</button>
       </div>
     </div>
-    <div v-if="show3DView" class="molview-container">
-      <div class="molview-header">
+    <div v-if="show3DView" class="molview-container" ref="molviewContainer">
+      <div class="molview-header" @mousedown="startDrag" @touchstart="startTouchDrag">
         <span>3D</span>
         <button @click="close3DView" class="close-button">×</button>
       </div>
@@ -49,7 +49,10 @@ export default {
       iframeOrigin: null,
       show3DView: false,
       molviewUrl: '',
-      defaultSmiles: 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1'
+      defaultSmiles: 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1',
+      isDragging: false,
+      dragOffset: { x: 0, y: 0 },
+      touchStartPos: { x: 0, y: 0 }
     }
   },
   watch: {
@@ -229,6 +232,76 @@ export default {
 
     close3DView() {
       this.show3DView = false;
+    },
+
+    startDrag(event) {
+      if (event.target.classList.contains('close-button')) {
+        return;
+      }
+      this.isDragging = true;
+      const container = this.$refs.molviewContainer;
+      const rect = container.getBoundingClientRect();
+      this.dragOffset = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+      
+      document.addEventListener('mousemove', this.onDrag);
+      document.addEventListener('mouseup', this.stopDrag);
+    },
+    
+    onDrag(event) {
+      if (!this.isDragging) return;
+      
+      const container = this.$refs.molviewContainer;
+      const x = event.clientX - this.dragOffset.x;
+      const y = event.clientY - this.dragOffset.y;
+      
+      container.style.left = `${x}px`;
+      container.style.top = `${y}px`;
+      container.style.transform = 'none';
+    },
+    
+    stopDrag() {
+      this.isDragging = false;
+      document.removeEventListener('mousemove', this.onDrag);
+      document.removeEventListener('mouseup', this.stopDrag);
+    },
+
+    startTouchDrag(event) {
+      if (event.target.classList.contains('close-button')) {
+        return;
+      }
+      event.preventDefault();
+      const touch = event.touches[0];
+      const container = this.$refs.molviewContainer;
+      const rect = container.getBoundingClientRect();
+      
+      this.touchStartPos = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+      
+      document.addEventListener('touchmove', this.onTouchDrag, { passive: false });
+      document.addEventListener('touchend', this.stopTouchDrag);
+    },
+    
+    onTouchDrag(event) {
+      event.preventDefault();
+      const touch = event.touches[0];
+      const container = this.$refs.molviewContainer;
+      
+      const x = touch.clientX - this.touchStartPos.x;
+      const y = touch.clientY - this.touchStartPos.y;
+      
+      container.style.left = `${x}px`;
+      container.style.top = `${y}px`;
+      container.style.transform = 'none';
+    },
+    
+    stopTouchDrag() {
+      document.removeEventListener('touchmove', this.onTouchDrag);
+      document.removeEventListener('touchend', this.stopTouchDrag);
     }
   }
 }
@@ -275,6 +348,7 @@ export default {
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  cursor: move;
 }
 
 .molview-header {
@@ -284,25 +358,8 @@ export default {
   padding: 8px;
   background: #f5f5f5;
   border-bottom: 1px solid #ccc;
-}
-
-.view-toggle {
-  display: flex;
-  gap: 4px;
-}
-
-.view-toggle button {
-  padding: 4px 12px;
-  border: 1px solid #ccc;
-  background: white;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.view-toggle button.active {
-  background: #007bff;
-  color: white;
-  border-color: #0056b3;
+  user-select: none;
+  touch-action: none;
 }
 
 .view-content {
@@ -361,40 +418,15 @@ export default {
 }
 
 @media screen and (max-width: 600px) {
-
   .molview-container {
-    position: fixed;
     top: 75%;
     left: 50%;
-    transform: translate(-50%, -50%);
     width: 300px;
     height: 300px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-  }
-
-  .view-content {
-    width: 100%;
-    height: calc(100% - 40px);
-  }
-
-  .molview-header {
-    padding: 4px 8px;
-  }
-
-  .close-button {
-    padding: 0 4px;
   }
 }
 
 @media screen and (max-width: 500px) {
-  .example-select {
-    width: 100%;
-  }
-  
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
