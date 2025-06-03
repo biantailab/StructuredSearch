@@ -48,15 +48,15 @@ export default {
       smilesValue: '',
       iframeOrigin: null,
       show3DView: false,
-      molviewUrl: ''
+      molviewUrl: '',
+      defaultSmiles: 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1'
     }
   },
   watch: {
     smilesValue: {
-      handler(newValue) {
+      handler() {
         if (this.show3DView) {
-          const smiles = newValue || 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
-          this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(smiles)}`;
+          this.updateMolviewUrl();
         }
       },
       immediate: true
@@ -218,9 +218,12 @@ export default {
       }
     },
 
+    updateMolviewUrl() {
+      this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smilesValue || this.defaultSmiles)}`;
+    },
+
     async handle3DView() {
-      const smiles = this.smilesValue || 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
-      this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(smiles)}`;
+      this.updateMolviewUrl();
       this.show3DView = true;
     },
 
