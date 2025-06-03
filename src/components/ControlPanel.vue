@@ -19,8 +19,22 @@
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
         <button @click="handleGetCAS">CAS</button>
-        <button @click="handlePubChem">PubChem</button>
+        <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
+        <button @click="handlePubChem">PubChem</button>
+      </div>
+    </div>
+    <div v-if="show3DView" class="molview-container">
+      <div class="molview-header">
+        <span>3D</span>
+        <button @click="close3DView" class="close-button">×</button>
+      </div>
+      <div class="view-content">
+        <iframe 
+          :src="molviewUrl" 
+          frameborder="0" 
+          class="molview-frame"
+        ></iframe>
       </div>
     </div>
   </div>
@@ -32,7 +46,20 @@ export default {
   data() {
     return {
       smilesValue: '',
-      iframeOrigin: null
+      iframeOrigin: null,
+      show3DView: false,
+      molviewUrl: ''
+    }
+  },
+  watch: {
+    smilesValue: {
+      handler(newValue) {
+        if (this.show3DView) {
+          const smiles = newValue || 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
+          this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(smiles)}`;
+        }
+      },
+      immediate: true
     }
   },
   mounted() {
@@ -84,10 +111,6 @@ export default {
           { type: 'clearSketch' },
           '*'
         );
-      }
-      const selectElement = document.querySelector('.example-select');
-      if (selectElement) {
-        selectElement.value = '';
       }
     },
 
@@ -193,6 +216,16 @@ export default {
         console.error('获取 CAS 时出错:', error);
         alert('获取 CAS 失败，请检查网络连接');
       }
+    },
+
+    async handle3DView() {
+      const smiles = this.smilesValue || 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
+      this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(smiles)}`;
+      this.show3DView = true;
+    },
+
+    close3DView() {
+      this.show3DView = false;
     }
   }
 }
@@ -218,7 +251,7 @@ export default {
 
 .smiles-input {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   box-sizing: border-box;
 }
 
@@ -229,7 +262,132 @@ export default {
   flex-wrap: wrap;
 }
 
-@media screen and (max-width: 460px) {
+.molview-container {
+  position: fixed;
+  top: 50%;
+  left: 80%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.molview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ccc;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.view-toggle button {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.view-toggle button.active {
+  background: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.view-content {
+  width: 400px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.close-button:hover {
+  color: #666;
+}
+
+.molview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media screen and (max-width: 1024px) {
+  .molview-container {
+    position: fixed;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    width: 325px;
+    height: 325px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .view-content {
+    width: 100%;
+    height: calc(100% - 40px);
+  }
+
+  .molview-header {
+    padding: 4px 8px;
+  }
+
+  .close-button {
+    padding: 0 4px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+
+  .molview-container {
+    position: fixed;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .view-content {
+    width: 100%;
+    height: calc(100% - 40px);
+  }
+
+  .molview-header {
+    padding: 4px 8px;
+  }
+
+  .close-button {
+    padding: 0 4px;
+  }
+}
+
+@media screen and (max-width: 500px) {
   .example-select {
     width: 100%;
   }
