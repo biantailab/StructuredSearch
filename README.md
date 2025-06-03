@@ -10,4 +10,6 @@
     - Pregabalin
     - Fluoxetine
 - 获取CAS
-- 3D可视化与结构式，smiles实时转换（空白默认Benzyl titanium）
+- 3D可视化
+    - 可移动窗口
+    - 可与结构式，smiles进行实时更新
