@@ -1,19 +1,32 @@
 <template>
   <div class="app-container">
-    <ControlPanel />
+    <ControlPanel @show-3d="handleShow3D" />
     <MarvinEditor @iframe-loaded="handleIframeLoaded" />
+    <MolViewWindow 
+      :show="show3DView"
+      :smiles="currentSmiles"
+      @close="handleClose3D"
+    />
   </div>
 </template>
 
 <script>
 import ControlPanel from './components/ControlPanel.vue'
 import MarvinEditor from './components/MarvinEditor.vue'
+import MolViewWindow from './components/MolViewWindow.vue'
 
 export default {
   name: 'App',
   components: {
     ControlPanel,
-    MarvinEditor
+    MarvinEditor,
+    MolViewWindow
+  },
+  data() {
+    return {
+      show3DView: false,
+      currentSmiles: ''
+    }
   },
   methods: {
     handleIframeLoaded() {
@@ -25,6 +38,13 @@ export default {
           window.location.origin
         );
       }
+    },
+    handleShow3D(smiles) {
+      this.currentSmiles = smiles;
+      this.show3DView = true;
+    },
+    handleClose3D() {
+      this.show3DView = false;
     }
   }
 }

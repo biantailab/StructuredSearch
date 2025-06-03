@@ -24,19 +24,6 @@
         <button @click="handlePubChem">PubChem</button>
       </div>
     </div>
-    <div v-if="show3DView" class="molview-container" ref="molviewContainer">
-      <div class="molview-header" @mousedown="startDrag" @touchstart="startTouchDrag">
-        <span>3D</span>
-        <button @click="close3DView" class="close-button">×</button>
-      </div>
-      <div class="view-content">
-        <iframe 
-          :src="molviewUrl" 
-          frameborder="0" 
-          class="molview-frame"
-        ></iframe>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -46,23 +33,7 @@ export default {
   data() {
     return {
       smilesValue: '',
-      iframeOrigin: null,
-      show3DView: false,
-      molviewUrl: '',
-      defaultSmiles: 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1',
-      isDragging: false,
-      dragOffset: { x: 0, y: 0 },
-      touchStartPos: { x: 0, y: 0 }
-    }
-  },
-  watch: {
-    smilesValue: {
-      handler() {
-        if (this.show3DView) {
-          this.updateMolviewUrl();
-        }
-      },
-      immediate: true
+      iframeOrigin: null
     }
   },
   mounted() {
@@ -221,87 +192,8 @@ export default {
       }
     },
 
-    updateMolviewUrl() {
-      this.molviewUrl = `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smilesValue || this.defaultSmiles)}`;
-    },
-
-    async handle3DView() {
-      this.updateMolviewUrl();
-      this.show3DView = true;
-    },
-
-    close3DView() {
-      this.show3DView = false;
-    },
-
-    startDrag(event) {
-      if (event.target.classList.contains('close-button')) {
-        return;
-      }
-      this.isDragging = true;
-      const container = this.$refs.molviewContainer;
-      const rect = container.getBoundingClientRect();
-      this.dragOffset = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-      };
-      
-      document.addEventListener('mousemove', this.onDrag);
-      document.addEventListener('mouseup', this.stopDrag);
-    },
-    
-    onDrag(event) {
-      if (!this.isDragging) return;
-      
-      const container = this.$refs.molviewContainer;
-      const x = event.clientX - this.dragOffset.x;
-      const y = event.clientY - this.dragOffset.y;
-      
-      container.style.left = `${x}px`;
-      container.style.top = `${y}px`;
-      container.style.transform = 'none';
-    },
-    
-    stopDrag() {
-      this.isDragging = false;
-      document.removeEventListener('mousemove', this.onDrag);
-      document.removeEventListener('mouseup', this.stopDrag);
-    },
-
-    startTouchDrag(event) {
-      if (event.target.classList.contains('close-button')) {
-        return;
-      }
-      event.preventDefault();
-      const touch = event.touches[0];
-      const container = this.$refs.molviewContainer;
-      const rect = container.getBoundingClientRect();
-      
-      this.touchStartPos = {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
-      
-      document.addEventListener('touchmove', this.onTouchDrag, { passive: false });
-      document.addEventListener('touchend', this.stopTouchDrag);
-    },
-    
-    onTouchDrag(event) {
-      event.preventDefault();
-      const touch = event.touches[0];
-      const container = this.$refs.molviewContainer;
-      
-      const x = touch.clientX - this.touchStartPos.x;
-      const y = touch.clientY - this.touchStartPos.y;
-      
-      container.style.left = `${x}px`;
-      container.style.top = `${y}px`;
-      container.style.transform = 'none';
-    },
-    
-    stopTouchDrag() {
-      document.removeEventListener('touchmove', this.onTouchDrag);
-      document.removeEventListener('touchend', this.stopTouchDrag);
+    handle3DView() {
+      this.$emit('show-3d', this.smilesValue);
     }
   }
 }
@@ -336,94 +228,6 @@ export default {
   justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-.molview-container {
-  position: fixed;
-  top: 50%;
-  left: 80%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  cursor: move;
-}
-
-.molview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ccc;
-  user-select: none;
-  touch-action: none;
-}
-
-.view-content {
-  width: 400px;
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 8px;
-}
-
-.close-button:hover {
-  color: #666;
-}
-
-.molview-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-@media screen and (max-width: 1024px) {
-  .molview-container {
-    position: fixed;
-    top: 50%;
-    left: 75%;
-    transform: translate(-50%, -50%);
-    width: 325px;
-    height: 325px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-  }
-
-  .view-content {
-    width: 100%;
-    height: calc(100% - 40px);
-  }
-
-  .molview-header {
-    padding: 4px 8px;
-  }
-
-  .close-button {
-    padding: 0 4px;
-  }
-}
-
-@media screen and (max-width: 600px) {
-  .molview-container {
-    top: 75%;
-    left: 50%;
-    width: 300px;
-    height: 300px;
-  }
 }
 
 @media screen and (max-width: 500px) {
