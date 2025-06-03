@@ -210,8 +210,8 @@ export default {
       this.touchStartPos = {
         x: touch.clientX,
         y: touch.clientY,
-        left: this.containerPosition.left,
-        top: this.containerPosition.top
+        left: rect.left,
+        top: rect.top
       };
       
       const marvinFrame = document.getElementById('marvinFrame');
@@ -221,6 +221,7 @@ export default {
       }
       
       container.style.zIndex = '9999';
+      container.style.transition = 'none';
       
       this.lastMoveTime = performance.now();
       document.addEventListener('touchmove', this.onTouchDrag, { passive: false });
@@ -253,11 +254,6 @@ export default {
       
       newLeft = Math.max(minX, Math.min(newLeft, maxX));
       newTop = Math.max(minY, Math.min(newTop, maxY));
-      
-      this.containerPosition = {
-        left: newLeft,
-        top: newTop
-      };
       
       container.style.left = `${newLeft}px`;
       container.style.top = `${newTop}px`;
