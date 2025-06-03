@@ -5,11 +5,11 @@
 - smiles与结构式互相转换
 - PubChem搜索
 - HNMR搜索
-- 获取CAS
-
-## 新增
-
 - Example:
     - Benzyl titanium
     - Pregabalin
-    - Fluoxetine 
+    - Fluoxetine
+- 获取CAS
+- 3D可视化
+    - 可移动窗口
+    - 可与结构式，smiles进行实时更新

@@ -19,8 +19,9 @@
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
         <button @click="handleGetCAS">CAS</button>
-        <button @click="handlePubChem">PubChem</button>
+        <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
+        <button @click="handlePubChem">PubChem</button>
       </div>
     </div>
   </div>
@@ -85,10 +86,11 @@ export default {
           '*'
         );
       }
-      const selectElement = document.querySelector('.example-select');
-      if (selectElement) {
-        selectElement.value = '';
+      const select = document.querySelector('.example-select');
+      if (select) {
+        select.value = '';
       }
+      this.smilesValue = '';
     },
 
     handleCopy() {
@@ -193,6 +195,13 @@ export default {
         console.error('获取 CAS 时出错:', error);
         alert('获取 CAS 失败，请检查网络连接');
       }
+    },
+
+    handle3DView() {
+      if (!this.smilesValue) {
+        return;
+      }
+      this.$emit('show-3d', this.smilesValue);
     }
   }
 }
@@ -218,7 +227,7 @@ export default {
 
 .smiles-input {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   box-sizing: border-box;
 }
 
@@ -229,11 +238,7 @@ export default {
   flex-wrap: wrap;
 }
 
-@media screen and (max-width: 460px) {
-  .example-select {
-    width: 100%;
-  }
-  
+@media screen and (max-width: 500px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;

@@ -1,21 +1,50 @@
 <template>
   <div class="app-container">
-    <ControlPanel />
+    <ControlPanel @show-3d="handleShow3D" />
     <MarvinEditor @iframe-loaded="handleIframeLoaded" />
+    <MolViewWindow 
+      :show="show3DView"
+      :smiles="currentSmiles"
+      @close="handleClose3D"
+    />
   </div>
 </template>
 
 <script>
 import ControlPanel from './components/ControlPanel.vue'
 import MarvinEditor from './components/MarvinEditor.vue'
+import MolViewWindow from './components/MolViewWindow.vue'
 
 export default {
   name: 'App',
   components: {
     ControlPanel,
-    MarvinEditor
+    MarvinEditor,
+    MolViewWindow
+  },
+  data() {
+    return {
+      show3DView: false,
+      currentSmiles: ''
+    }
+  },
+  mounted() {
+    this.setupMessageListener();
   },
   methods: {
+    setupMessageListener() {
+      window.addEventListener('message', (event) => {
+        const marvinIframe = document.getElementById('marvinFrame');
+        if (!marvinIframe || event.source !== marvinIframe.contentWindow) {
+          return;
+        }
+
+        // 处理来自 Marvin 编辑器的消息
+        if (event.data?.type === 'smilesChangedInSketcher') {
+          this.currentSmiles = event.data.value;
+        }
+      });
+    },
     handleIframeLoaded() {
       // 通知 Marvin 编辑器已加载完成
       const marvinIframe = document.getElementById('marvinFrame');
@@ -25,6 +54,13 @@ export default {
           window.location.origin
         );
       }
+    },
+    handleShow3D(smiles) {
+      this.currentSmiles = smiles;
+      this.show3DView = true;
+    },
+    handleClose3D() {
+      this.show3DView = false;
     }
   }
 }
