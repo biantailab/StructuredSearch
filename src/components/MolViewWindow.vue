@@ -53,8 +53,10 @@ export default {
   },
   computed: {
     molviewUrl() {
-      const defaultSmiles = 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
-      return `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smiles || defaultSmiles)}`;
+      if (!this.smiles) {
+        return '';
+      }
+      return `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smiles)}`;
     }
   },
   watch: {
@@ -130,8 +132,8 @@ export default {
       this.touchStartPos = {
         x: event.clientX,
         y: event.clientY,
-        left: this.containerPosition.left,
-        top: this.containerPosition.top
+        left: rect.left,
+        top: rect.top
       };
       
       const marvinFrame = document.getElementById('marvinFrame');
@@ -141,7 +143,7 @@ export default {
       }
       
       container.style.zIndex = '9999';
-      container.style.transform = 'none';
+      container.style.transition = 'none';
       
       this.lastMoveTime = performance.now();
       document.addEventListener('mousemove', this.onDrag, { passive: true });
@@ -172,15 +174,9 @@ export default {
       newLeft = Math.max(minX, Math.min(newLeft, maxX));
       newTop = Math.max(minY, Math.min(newTop, maxY));
       
-      this.containerPosition = {
-        left: newLeft,
-        top: newTop
-      };
-      
-      requestAnimationFrame(() => {
-        container.style.left = `${newLeft}px`;
-        container.style.top = `${newTop}px`;
-      });
+      container.style.left = `${newLeft}px`;
+      container.style.top = `${newTop}px`;
+      container.style.transform = 'none';
     },
     
     stopDrag() {
@@ -326,8 +322,7 @@ export default {
   cursor: move;
   touch-action: none;
   user-select: none;
-  will-change: transform, left, top;
-  transition: none;
+  will-change: transform;
 }
 
 .molview-header {

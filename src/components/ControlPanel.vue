@@ -86,6 +86,11 @@ export default {
           '*'
         );
       }
+      const select = document.querySelector('.example-select');
+      if (select) {
+        select.value = '';
+      }
+      this.smilesValue = '';
     },
 
     handleCopy() {
@@ -193,14 +198,8 @@ export default {
     },
 
     handle3DView() {
-      const defaultSmiles = 'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1';
       if (!this.smilesValue) {
-        this.smilesValue = defaultSmiles;
-        this.sendSmilesToMarvin(defaultSmiles);
-        const select = document.querySelector('.example-select');
-        if (select) {
-          select.value = defaultSmiles;
-        }
+        return;
       }
       this.$emit('show-3d', this.smilesValue);
     }
