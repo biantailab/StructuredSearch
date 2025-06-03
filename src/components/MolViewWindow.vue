@@ -9,6 +9,7 @@
         :src="molviewUrl" 
         frameborder="0" 
         class="molview-frame"
+        :key="smiles"
       ></iframe>
     </div>
   </div>
@@ -43,6 +44,10 @@ export default {
       initialPosition: {
         left: '80%',
         top: '50%'
+      },
+      containerPosition: {
+        left: 0,
+        top: 0
       }
     }
   },
@@ -52,9 +57,41 @@ export default {
       return `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smiles || defaultSmiles)}`;
     }
   },
+  watch: {
+    smiles: {
+      immediate: true,
+      handler(newSmiles) {
+        if (this.show) {
+          this.$nextTick(() => {
+            this.update3DView();
+          });
+        }
+      }
+    },
+    show: {
+      immediate: true,
+      handler(newShow) {
+        if (newShow) {
+          this.$nextTick(() => {
+            this.update3DView();
+          });
+        }
+      }
+    }
+  },
   mounted() {
     this.updateMarvinBounds();
     window.addEventListener('resize', this.updateMarvinBounds);
+    this.$nextTick(() => {
+      const container = this.$refs.molviewContainer;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        this.containerPosition = {
+          left: rect.left,
+          top: rect.top
+        };
+      }
+    });
   },
   beforeUnmount() {
     this.cleanupDragEvents();
@@ -62,6 +99,14 @@ export default {
     window.removeEventListener('resize', this.updateMarvinBounds);
   },
   methods: {
+    update3DView() {
+      if (!this.$el) return;
+      
+      const iframe = this.$el.querySelector('.molview-frame');
+      if (iframe) {
+        iframe.src = this.molviewUrl;
+      }
+    },
     updateMarvinBounds() {
       const marvinFrame = document.getElementById('marvinFrame');
       if (marvinFrame) {
@@ -85,8 +130,8 @@ export default {
       this.touchStartPos = {
         x: event.clientX,
         y: event.clientY,
-        left: rect.left,
-        top: rect.top
+        left: this.containerPosition.left,
+        top: this.containerPosition.top
       };
       
       const marvinFrame = document.getElementById('marvinFrame');
@@ -127,6 +172,11 @@ export default {
       newLeft = Math.max(minX, Math.min(newLeft, maxX));
       newTop = Math.max(minY, Math.min(newTop, maxY));
       
+      this.containerPosition = {
+        left: newLeft,
+        top: newTop
+      };
+      
       requestAnimationFrame(() => {
         container.style.left = `${newLeft}px`;
         container.style.top = `${newTop}px`;
@@ -164,8 +214,8 @@ export default {
       this.touchStartPos = {
         x: touch.clientX,
         y: touch.clientY,
-        left: rect.left,
-        top: rect.top
+        left: this.containerPosition.left,
+        top: this.containerPosition.top
       };
       
       const marvinFrame = document.getElementById('marvinFrame');
@@ -207,6 +257,11 @@ export default {
       
       newLeft = Math.max(minX, Math.min(newLeft, maxX));
       newTop = Math.max(minY, Math.min(newTop, maxY));
+      
+      this.containerPosition = {
+        left: newLeft,
+        top: newTop
+      };
       
       container.style.left = `${newLeft}px`;
       container.style.top = `${newTop}px`;
@@ -263,7 +318,7 @@ export default {
   top: 50%;
   left: 80%;
   transform: translate(-50%, -50%);
-  background: white;
+  background: #f5f5f5;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -292,6 +347,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #f5f5f5;
+  position: relative;
 }
 
 .close-button {

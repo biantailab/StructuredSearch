@@ -28,7 +28,23 @@ export default {
       currentSmiles: ''
     }
   },
+  mounted() {
+    this.setupMessageListener();
+  },
   methods: {
+    setupMessageListener() {
+      window.addEventListener('message', (event) => {
+        const marvinIframe = document.getElementById('marvinFrame');
+        if (!marvinIframe || event.source !== marvinIframe.contentWindow) {
+          return;
+        }
+
+        // 处理来自 Marvin 编辑器的消息
+        if (event.data?.type === 'smilesChangedInSketcher') {
+          this.currentSmiles = event.data.value;
+        }
+      });
+    },
     handleIframeLoaded() {
       // 通知 Marvin 编辑器已加载完成
       const marvinIframe = document.getElementById('marvinFrame');
