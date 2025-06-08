@@ -13,3 +13,6 @@
 - 3D可视化
     - 可移动窗口
     - 可与结构式，smiles进行实时更新
+    - 种类
+        | ![ball](public/imgs/ball.png) | ![stick](public/imgs/stick.png) | ![vdw](public/imgs/vdw.png) | ![wireframe](public/imgs/wireframe.png) |
+        |---|---|---|---|

@@ -2,6 +2,17 @@
   <div v-if="show" class="molview-container" ref="molviewContainer">
     <div class="molview-header" @mousedown="startDrag" @touchstart="startTouchDrag">
       <span>3D</span>
+      <div class="mode-selector">
+        <button 
+          v-for="mode in modes" 
+          :key="mode.value"
+          :class="{ active: currentMode === mode.value }"
+          @click.stop="changeMode(mode.value)"
+          @touchstart.stop="changeMode(mode.value)"
+        >
+          {{ mode.label }}
+        </button>
+      </div>
       <button @click="close" class="close-button">×</button>
     </div>
     <div class="view-content">
@@ -48,7 +59,14 @@ export default {
       containerPosition: {
         left: 0,
         top: 0
-      }
+      },
+      currentMode: 'balls',
+      modes: [
+        { label: 'Ball', value: 'balls' },
+        { label: 'Stick', value: 'stick' },
+        { label: 'VDW', value: 'vdw' },
+        { label: 'Wireframe', value: 'wireframe' }
+      ]
     }
   },
   computed: {
@@ -56,7 +74,7 @@ export default {
       if (!this.smiles) {
         return '';
       }
-      return `https://embed.molview.org/v1/?mode=balls&smiles=${encodeURIComponent(this.smiles)}`;
+      return `https://embed.molview.org/v1/?mode=${this.currentMode}&smiles=${encodeURIComponent(this.smiles)}`;
     }
   },
   watch: {
@@ -299,6 +317,10 @@ export default {
 
     close() {
       this.$emit('close');
+    },
+
+    changeMode(mode) {
+      this.currentMode = mode;
     }
   }
 }
@@ -330,6 +352,20 @@ export default {
   border-bottom: 1px solid #ccc;
   user-select: none;
   touch-action: none;
+}
+
+.mode-selector {
+  display: flex;
+  margin: 0 8px;
+  gap: 10px;
+}
+
+.mode-selector button {
+  font-size: 12px;
+}
+
+.mode-selector button.active {
+  background: #e0e0e0;
 }
 
 .view-content {
