@@ -14,11 +14,5 @@
     - 可移动窗口
     - 可与结构式，smiles进行实时更新
     - 种类
-        - Ball and Stick (Ball)  
-        ![ball](public/imgs/ball.png)
-        - Stick  
-        ![stick](public/imgs/stick.png)
-        - van der Waals Spheres (VDW)  
-        ![vdw](public/imgs/vdw.png)
-        - Wireframe  
-        ![wireframe](public/imgs/wireframe.png)
+        | ![ball](public/imgs/ball.png) | ![stick](public/imgs/stick.png) | ![vdw](public/imgs/vdw.png) | ![wireframe](public/imgs/wireframe.png) |
+        |---|---|---|---|
