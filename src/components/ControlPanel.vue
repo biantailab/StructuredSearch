@@ -157,8 +157,13 @@ export default {
         const casData = await casResponse.json();
         const synonyms = casData.InformationList?.Information?.[0]?.Synonym || [];
         
-        // 查找CAS 
-        const casNumber = synonyms.find(syn => /^\d+-\d+-\d+$/.test(syn));
+        // 查找CAS号 - 使用标准格式验证
+        const casNumber = synonyms.find(syn => {
+          // CAS号标准格式：多位数字-两位数字-一位数字
+          const casRegex = /^\d+-\d{2}-\d$/;
+          // 排除EC编号（通常以EC开头）
+          return casRegex.test(syn) && !syn.startsWith('EC');
+        });
         
         if (casNumber) {
           try {
