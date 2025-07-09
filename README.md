@@ -1,6 +1,20 @@
+<img src="public/imgs/marvin.png" alt="marvinjs logo" width="100" height="100" align="right" />
+
+# Marvin JS
+
+Powered by [Chemaxon](https://chemaxon.com)
+
+## 依赖
+
+- [pubchem](https://pubchem.ncbi.nlm.nih.gov)
+- [nmrdb](https://www.nmrdb.org)
+- [molview](https://molview.org)
+
+## 预览
+
 ![Marvin JS](public/imgs/marvinjs.png)
 
-# 功能
+## 功能
 
 - smiles与结构式互相转换
 - PubChem搜索
