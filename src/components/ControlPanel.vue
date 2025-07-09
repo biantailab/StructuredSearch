@@ -1,14 +1,27 @@
 <template>
   <div class="control-panel">
     <div class="control-group">
-      <input 
-        type="text" 
-        id="smilesInput"
-        v-model="smilesValue" 
-        placeholder="SMILES" 
-        @input="handleInput"
-        class="smiles-input"
-      >
+      <div class="input-stars-row">
+        <input 
+          type="text" 
+          id="smilesInput"
+          v-model="smilesValue" 
+          placeholder="SMILES" 
+          @input="handleInput"
+          class="smiles-input"
+        />
+        <a
+          href="https://github.com/biantailab/MarvinJS"
+          target="_blank"
+          class="github-stars-link"
+        >
+          <img
+            src="https://img.shields.io/github/stars/biantailab/MarvinJS?style=social"
+            alt="GitHub stars"
+            class="github-stars-img"
+          />
+        </a>
+      </div>
       <div class="button-group">
         <select @change="loadExample" class="example-select">
           <option value="">Example:</option>
@@ -230,10 +243,28 @@ export default {
   gap: 8px;
 }
 
-.smiles-input {
+.input-stars-row {
+  display: flex;
+  align-items: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 470px;
+  gap: 8px;
+}
+
+.smiles-input {
+  flex: 1;
+  max-width: 100%;
   box-sizing: border-box;
+}
+
+.github-stars-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.github-stars-img {
+  height: 22px;
 }
 
 .button-group {
