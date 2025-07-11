@@ -135,6 +135,23 @@ export default {
       }
     },
 
+    async getPubChemCID(smiles) {
+      const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/cids/JSON`;
+      try {
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) {
+          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
+        }
+        const searchData = await searchResponse.json();
+        if (!searchData.IdentifierList?.CID?.[0]) {
+          return null;
+        }
+        return searchData.IdentifierList.CID[0];
+      } catch (e) {
+        return null;
+      }
+    },
+
     async handleGetCAS() {
       if (!this.smilesValue) {
         return;
@@ -143,22 +160,11 @@ export default {
       try {
         console.log('正在查询 CAS，SMILES:', this.smilesValue);
         
-        // 通过SMILES获取PubChem CID
-        const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(this.smilesValue)}/cids/JSON`;
-        console.log('PubChem 搜索 URL:', searchUrl);
-        
-        const searchResponse = await fetch(searchUrl);
-        if (!searchResponse.ok) {
-          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
-        }
-        
-        const searchData = await searchResponse.json();
-        if (!searchData.IdentifierList?.CID?.[0]) {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        
-        const cid = searchData.IdentifierList.CID[0];
         console.log('找到 PubChem CID:', cid);
         
         // 使用CID获取CAS
@@ -232,21 +238,11 @@ export default {
       try {
         console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
         
-        const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(this.smilesValue)}/cids/JSON`;
-        console.log('PubChem 搜索 URL:', searchUrl);
-        
-        const searchResponse = await fetch(searchUrl);
-        if (!searchResponse.ok) {
-          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
-        }
-        
-        const searchData = await searchResponse.json();
-        if (!searchData.IdentifierList?.CID?.[0]) {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        
-        const cid = searchData.IdentifierList.CID[0];
         console.log('找到 PubChem CID:', cid);
         
         const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;

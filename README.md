@@ -1,4 +1,4 @@
-<img src="public/imgs/marvin.png" alt="marvinjs logo" width="100" height="100" align="right" />
+<img src="imgs/marvin.png" alt="marvinjs logo" width="100" height="100" align="right" />
 
 # Marvin JS
 
@@ -12,7 +12,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 预览
 
-![Marvin JS](public/imgs/marvinjs.png)
+![Marvin JS](imgs/marvinjs.png)
 
 ## 功能
 
@@ -24,9 +24,9 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Pregabalin
     - Fluoxetine
 - 获取CAS
+- 获取img
 - 3D可视化
-    - 可移动窗口
     - 可与结构式，smiles进行实时更新
     - 种类
-        | ![ball](public/imgs/ball.png) | ![stick](public/imgs/stick.png) | ![vdw](public/imgs/vdw.png) | ![wireframe](public/imgs/wireframe.png) |
+        | ![ball](imgs/ball.png) | ![stick](imgs/stick.png) | ![vdw](imgs/vdw.png) | ![wireframe](imgs/wireframe.png) |
         |---|---|---|---|
