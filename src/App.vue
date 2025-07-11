@@ -7,6 +7,11 @@
       :smiles="currentSmiles"
       @close="handleClose3D"
     />
+    <div class="chemaxon-corner">
+      <a href="http://www.chemaxon.com/" target="_blank" rel="noopener">
+        <img src="/img/chemaxon.png" alt="Chemaxon" style="height:30px;" />
+      </a>
+    </div>
   </div>
 </template>
 
@@ -92,5 +97,15 @@ export default {
   font-size: 1.5rem;
   font-weight: 600;
   color: #333;
+}
+
+.chemaxon-corner {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  background: rgba(0,0,0,0.0);
+  padding: 0;
+  border-radius: 8px;
 }
 </style> 
