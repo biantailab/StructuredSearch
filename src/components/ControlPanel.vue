@@ -31,7 +31,8 @@
         </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
-        <button @click="handleGetCAS">CAS</button>
+        <button @click="handleGetCAS">get CAS</button>
+        <button @click="handlePubChemImage">get Img</button>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
@@ -134,6 +135,23 @@ export default {
       }
     },
 
+    async getPubChemCID(smiles) {
+      const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/cids/JSON`;
+      try {
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) {
+          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
+        }
+        const searchData = await searchResponse.json();
+        if (!searchData.IdentifierList?.CID?.[0]) {
+          return null;
+        }
+        return searchData.IdentifierList.CID[0];
+      } catch (e) {
+        return null;
+      }
+    },
+
     async handleGetCAS() {
       if (!this.smilesValue) {
         return;
@@ -142,22 +160,11 @@ export default {
       try {
         console.log('正在查询 CAS，SMILES:', this.smilesValue);
         
-        // 通过SMILES获取PubChem CID
-        const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(this.smilesValue)}/cids/JSON`;
-        console.log('PubChem 搜索 URL:', searchUrl);
-        
-        const searchResponse = await fetch(searchUrl);
-        if (!searchResponse.ok) {
-          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
-        }
-        
-        const searchData = await searchResponse.json();
-        if (!searchData.IdentifierList?.CID?.[0]) {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        
-        const cid = searchData.IdentifierList.CID[0];
         console.log('找到 PubChem CID:', cid);
         
         // 使用CID获取CAS
@@ -220,6 +227,64 @@ export default {
         return;
       }
       this.$emit('show-3d', this.smilesValue);
+    },
+
+    async handlePubChemImage() {
+      if (!this.smilesValue) {
+        alert('请先输入SMILES');
+        return;
+      }
+
+      try {
+        console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
+        
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        console.log('找到 PubChem CID:', cid);
+        
+        const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;
+        const nameResponse = await fetch(nameUrl);
+        let compoundName = `CID_${cid}`;
+        
+        if (nameResponse.ok) {
+          const nameData = await nameResponse.json();
+          if (nameData.PropertyTable?.Properties?.[0]?.IUPACName) {
+            compoundName = nameData.PropertyTable.Properties[0].IUPACName;
+            compoundName = compoundName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
+          }
+        }
+        
+        const imageUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG`;
+        console.log('PubChem 图片下载 URL:', imageUrl);
+        
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`图片下载失败: ${imageResponse.status}`);
+        }
+        
+        const imageBlob = await imageResponse.blob();
+        const downloadUrl = URL.createObjectURL(imageBlob);
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = `${compoundName}_2D_structure.png`;
+        downloadLink.style.display = 'none';
+        
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        URL.revokeObjectURL(downloadUrl);
+        
+        console.log(`图片已下载: ${compoundName}_2D_structure.png`);
+        
+      } catch (error) {
+        console.error('获取PubChem图片时出错:', error);
+        alert('获取PubChem图片失败，请检查网络连接');
+      }
     }
   }
 }
@@ -240,15 +305,15 @@ export default {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  gap: 8px;
+  gap: 4px;
 }
 
 .input-stars-row {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 470px;
-  gap: 8px;
+  max-width: 520px;
+  gap: 4px;
 }
 
 .smiles-input {
@@ -270,11 +335,11 @@ export default {
 .button-group {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 550px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
@@ -282,7 +347,7 @@ export default {
   
   .button-group button {
     flex: 1;
-    min-width: 60px;
+    min-width: 65px;
   }
 }
 </style> 
