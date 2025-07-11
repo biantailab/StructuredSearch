@@ -357,7 +357,7 @@ export default {
 .mode-selector {
   display: flex;
   margin: 0 8px;
-  gap: 10px;
+  gap: 4px;
 }
 
 .mode-selector button {
