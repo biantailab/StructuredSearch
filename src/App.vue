@@ -9,7 +9,7 @@
     />
     <div class="chemaxon-corner">
       <a href="http://www.chemaxon.com/" target="_blank" rel="noopener">
-        <img src="/img/chemaxon.png" alt="Chemaxon" style="height:30px;" />
+        <img src="/imgs/chemaxon.png" alt="Chemaxon" style="height:30px;" />
       </a>
     </div>
   </div>
