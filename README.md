@@ -1,4 +1,4 @@
-<img src="public/imgs/marvin.png" alt="marvinjs logo" width="100" height="100" align="right" />
+<img src="public/imgs/marvinjs.png" alt="marvinjs logo" width="100" height="100" align="right" />
 
 # Marvin JS
 
