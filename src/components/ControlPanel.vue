@@ -1,5 +1,8 @@
 <template>
   <div class="control-panel">
+    <div v-if="loading" class="loading-overlay">
+      <div>Loading...</div>
+    </div>
     <div class="control-group">
       <div class="input-stars-row">
         <input 
@@ -48,7 +51,8 @@ export default {
   data() {
     return {
       smilesValue: '',
-      iframeOrigin: null
+      iframeOrigin: null,
+      loading: false
     }
   },
   mounted() {
@@ -157,7 +161,7 @@ export default {
       if (!this.smilesValue) {
         return;
       }
-
+      this.loading = true;
       try {
         console.log('正在查询 CAS，SMILES:', this.smilesValue);
         
@@ -220,6 +224,8 @@ export default {
       } catch (error) {
         console.error('获取 CAS 时出错:', error);
         alert('获取 CAS 失败，请检查网络连接');
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -234,7 +240,7 @@ export default {
       if (!this.smilesValue) {
         return;
       }
-
+      this.loading = true;
       try {
         console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
         
@@ -284,6 +290,8 @@ export default {
       } catch (error) {
         console.error('获取PubChem图片时出错:', error);
         alert('获取PubChem图片失败，请检查网络连接');
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -291,6 +299,7 @@ export default {
       if (!this.smilesValue) {
         return;
       }
+      this.loading = true;
       try {
         const cid = await this.getPubChemCID(this.smilesValue);
         if (!cid) {
@@ -335,6 +344,8 @@ export default {
         }
       } catch (e) {
         alert('获取 DrugBank ID 失败');
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -388,6 +399,19 @@ export default {
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 @media screen and (max-width: 625px) {
