@@ -9,6 +9,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [nmrdb](https://www.nmrdb.org)
 - [molview](https://molview.org)
+- [drugbank](https://go.drugbank.com)
 
 ## 预览
 
@@ -19,6 +20,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - smiles与结构式互相转换
 - PubChem搜索
 - HNMR搜索
+- DrugBank搜索
 - Example:
     - Benzyl titanium
     - Pregabalin
