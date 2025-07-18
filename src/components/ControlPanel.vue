@@ -34,8 +34,9 @@
         </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
-        <button @click="handleGetCAS">get CAS</button>
-        <button @click="handlePubChemImage">get Img</button>
+        <button @click="handleGetCAS">CAS</button>
+        <button @click="handleGetIUPACName">IUPACName</button>
+        <button @click="handlePubChemImage">Img</button>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
@@ -236,6 +237,16 @@ export default {
       this.$emit('show-3d', this.smilesValue);
     },
 
+    async getIUPACNameByCID(cid) {
+      const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;
+      const nameResponse = await fetch(nameUrl);
+      if (!nameResponse.ok) {
+        throw new Error('获取 IUPACName 失败');
+      }
+      const nameData = await nameResponse.json();
+      return nameData.PropertyTable?.Properties?.[0]?.IUPACName || null;
+    },
+
     async handlePubChemImage() {
       if (!this.smilesValue) {
         return;
@@ -251,16 +262,14 @@ export default {
         }
         console.log('找到 PubChem CID:', cid);
         
-        const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;
-        const nameResponse = await fetch(nameUrl);
         let compoundName = `CID_${cid}`;
-        
-        if (nameResponse.ok) {
-          const nameData = await nameResponse.json();
-          if (nameData.PropertyTable?.Properties?.[0]?.IUPACName) {
-            compoundName = nameData.PropertyTable.Properties[0].IUPACName;
-            compoundName = compoundName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
+        try {
+          const iupacName = await this.getIUPACNameByCID(cid);
+          if (iupacName) {
+            compoundName = iupacName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
           }
+        } catch (e) {
+          // 保持默认 CID 名称
         }
         
         const imageUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG`;
@@ -347,6 +356,35 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    async handleGetIUPACName() {
+      if (!this.smilesValue) {
+        return;
+      }
+      this.loading = true;
+      try {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        const iupacName = await this.getIUPACNameByCID(cid);
+        if (iupacName) {
+          try {
+            await navigator.clipboard.writeText(iupacName);
+            alert(`IUPACName: ${iupacName}\n已复制到剪贴板`);
+          } catch (err) {
+            alert(`IUPACName: ${iupacName}\n复制失败，请手动复制`);
+          }
+        } else {
+          alert('未找到 IUPACName');
+        }
+      } catch (error) {
+        alert('获取 IUPACName 失败，请检查网络连接');
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }
@@ -374,7 +412,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 598px;
+  max-width: 649px;
   gap: 4px;
 }
 
@@ -414,7 +452,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 625px) {
+@media screen and (max-width: 675px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
@@ -422,7 +460,7 @@ export default {
   
   .button-group button {
     flex: 1;
-    min-width: 70px;
+    min-width: 90px;
   }
 }
 </style> 

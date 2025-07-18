@@ -1,6 +1,6 @@
-<img src="public/imgs/marvinjs.png" alt="marvinjs logo" width="100" height="100" align="right" />
+<img src="imgs/structuredsearch_logo.png" alt="StructuredSearch logo" width="100" height="100" align="right" />
 
-# Marvin JS
+# StructuredSearch
 
 Powered by [Chemaxon](https://chemaxon.com)
 
@@ -13,7 +13,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 预览
 
-![Marvin JS](imgs/marvinjs.png)
+![StructuredSearch](imgs/structuredsearch.png)
 
 ## 功能
 
@@ -26,6 +26,7 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Pregabalin
     - Fluoxetine
 - 获取CAS
+- 获取IUPACName
 - 获取img
 - 3D可视化
     - 可与结构式，smiles进行实时更新
