@@ -14,12 +14,12 @@
           class="smiles-input"
         />
         <a
-          href="https://github.com/biantailab/MarvinJS"
+          href="https://github.com/biantailab/StructuredSearch"
           target="_blank"
           class="github-stars-link"
         >
           <img
-            src="https://img.shields.io/github/stars/biantailab/MarvinJS?style=social"
+            src="https://img.shields.io/github/stars/biantailab/StructuredSearch?style=social"
             alt="GitHub stars"
             class="github-stars-img"
           />
