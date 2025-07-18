@@ -1,5 +1,8 @@
 <template>
   <div class="control-panel">
+    <div v-if="loading" class="loading-overlay">
+      <div>Loading...</div>
+    </div>
     <div class="control-group">
       <div class="input-stars-row">
         <input 
@@ -36,6 +39,7 @@
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
+        <button @click="handleGetDrugBank">DrugBank</button>
       </div>
     </div>
   </div>
@@ -47,7 +51,8 @@ export default {
   data() {
     return {
       smilesValue: '',
-      iframeOrigin: null
+      iframeOrigin: null,
+      loading: false
     }
   },
   mounted() {
@@ -156,7 +161,7 @@ export default {
       if (!this.smilesValue) {
         return;
       }
-
+      this.loading = true;
       try {
         console.log('正在查询 CAS，SMILES:', this.smilesValue);
         
@@ -219,6 +224,8 @@ export default {
       } catch (error) {
         console.error('获取 CAS 时出错:', error);
         alert('获取 CAS 失败，请检查网络连接');
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -231,10 +238,9 @@ export default {
 
     async handlePubChemImage() {
       if (!this.smilesValue) {
-        alert('请先输入SMILES');
         return;
       }
-
+      this.loading = true;
       try {
         console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
         
@@ -284,6 +290,62 @@ export default {
       } catch (error) {
         console.error('获取PubChem图片时出错:', error);
         alert('获取PubChem图片失败，请检查网络连接');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handleGetDrugBank() {
+      if (!this.smilesValue) {
+        return;
+      }
+      this.loading = true;
+      try {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('获取 DrugBank ID 失败');
+        }
+        const data = await response.json();
+
+        function findDrugBankId(sections) {
+          for (const section of sections || []) {
+            if (section.TOCHeading === 'DrugBank ID') {
+              const info = section.Information?.[0];
+              if (info) {
+                if (info.URL) {
+                  return { id: info.Value?.StringWithMarkup?.[0]?.String, url: info.URL };
+                }
+                if (info.Value?.StringWithMarkup?.[0]?.String) {
+                  const id = info.Value.StringWithMarkup[0].String;
+                  return { id, url: `https://go.drugbank.com/drugs/${id}` };
+                }
+              }
+            }
+            if (section.Section) {
+              const result = findDrugBankId(section.Section);
+              if (result) return result;
+            }
+          }
+          return null;
+        }
+
+        const result = findDrugBankId(data.Record?.Section);
+
+        if (result && result.url) {
+          window.open(result.url, '_blank');
+        } else {
+          alert('未找到 DrugBank ID');
+        }
+      } catch (e) {
+        alert('获取 DrugBank ID 失败');
+      } finally {
+        this.loading = false;
       }
     }
   }
@@ -312,7 +374,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 520px;
+  max-width: 598px;
   gap: 4px;
 }
 
@@ -339,7 +401,20 @@ export default {
   flex-wrap: wrap;
 }
 
-@media screen and (max-width: 550px) {
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+@media screen and (max-width: 625px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
@@ -347,7 +422,7 @@ export default {
   
   .button-group button {
     flex: 1;
-    min-width: 65px;
+    min-width: 70px;
   }
 }
 </style> 
