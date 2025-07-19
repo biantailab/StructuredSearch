@@ -34,9 +34,13 @@
         </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
-        <button @click="handleGetCAS">CAS</button>
-        <button @click="handleGetIUPACName">IUPACName</button>
-        <button @click="handlePubChemImage">Img</button>
+        <select @change="handleGetSelect" class="get-select">
+          <option value="">Get:</option>
+          <option value="cas">CAS</option>
+          <option value="iupac">Name</option>
+          <option value="img">PNG</option>
+          <option value="sdf">SDF</option>
+        </select>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
@@ -371,6 +375,50 @@ export default {
       if (!this.smilesValue) return;
       const url = `https://go.drugbank.com/structures/search/small_molecule_drugs/structure?utf8=✓&searcher=structure&structure_search_type=substructure&structure=${encodeURIComponent(this.smilesValue)}#results`;
       window.open(url, '_blank');
+    },
+
+    handleGetSelect(event) {
+      const value = event.target.value;
+      if (!this.smilesValue || !value) return;
+      if (value === 'cas') {
+        this.handleGetCAS();
+      } else if (value === 'iupac') {
+        this.handleGetIUPACName();
+      } else if (value === 'img') {
+        this.handlePubChemImage();
+      } else if (value === 'sdf') {
+        this.handleGetSDF();
+      }
+      event.target.value = '';
+    },
+
+    async handleGetSDF() {
+      if (!this.smilesValue) return;
+      this.loading = true;
+      try {
+        const cid = await getPubChemCID(this.smilesValue);
+        if (!cid) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        const baseUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/record/SDF`;
+        let sdfUrl = `${baseUrl}?record_type=3d&response_type=save&response_basename=Conformer3D_COMPOUND_CID_${cid}`;
+        let response = await fetch(sdfUrl, { method: 'HEAD' });
+        if (!response.ok) {
+          sdfUrl = `${baseUrl}?record_type=2d&response_type=save&response_basename=Compound2D_COMPOUND_CID_${cid}`;
+          response = await fetch(sdfUrl, { method: 'HEAD' });
+          if (!response.ok) {
+            alert('该化合物在PubChem中没有3D或2D结构数据');
+            return;
+          }
+        }
+        window.location.href = sdfUrl;
+      } catch (error) {
+        console.error('获取SDF时出错:', error);
+        alert('获取SDF失败，请检查网络连接');
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }
@@ -398,7 +446,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 736px;
+  max-width: 615px;
   gap: 4px;
 }
 
@@ -438,7 +486,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 760px) {
+@media screen and (max-width: 640px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
