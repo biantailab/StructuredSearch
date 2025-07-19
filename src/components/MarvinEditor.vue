@@ -35,7 +35,7 @@ export default {
   flex-direction: column;
   align-items: center;
 }
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 760px) {
   .control-panel {
     height: 75vh;
     margin-bottom: 0;

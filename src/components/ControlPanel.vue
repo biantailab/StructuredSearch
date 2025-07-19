@@ -41,20 +41,34 @@
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
         <button @click="handleGetWikipedia">Wikipedia</button>
-        <button @click="handleGetDrugBank">DrugBank</button>
+        <select @change="handleDrugBankSelect" class="drugbank-select">
+          <option value="">DrugBank:</option>
+          <option value="exact">exact</option>
+          <option value="fuzzy">fuzzy</option>
+        </select>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import {
+  getPubChemCID,
+  getCASByCID,
+  getPubChemData,
+  getIUPACNameByCID,
+  findDrugBankId,
+  findWikipediaLink
+} from '@/utils/pubchem';
+
 export default {
   name: 'ControlPanel',
   data() {
     return {
       smilesValue: '',
       iframeOrigin: null,
-      loading: false
+      loading: false,
+      drugBankMode: 'exact'
     }
   },
   mounted() {
@@ -142,32 +156,6 @@ export default {
       }
     },
 
-    async getPubChemCID(smiles) {
-      const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/cids/JSON`;
-      try {
-        const searchResponse = await fetch(searchUrl);
-        if (!searchResponse.ok) {
-          throw new Error(`PubChem 搜索失败: ${searchResponse.status}`);
-        }
-        const searchData = await searchResponse.json();
-        if (!searchData.IdentifierList?.CID?.[0]) {
-          return null;
-        }
-        return searchData.IdentifierList.CID[0];
-      } catch (e) {
-        return null;
-      }
-    },
-
-    async getPubChemData(cid) {
-      const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('获取 PubChem 数据失败');
-      }
-      return await response.json();
-    },
-
     async handleGetCAS() {
       if (!this.smilesValue) {
         return;
@@ -175,32 +163,13 @@ export default {
       this.loading = true;
       try {
         console.log('正在查询 CAS，SMILES:', this.smilesValue);
-        
-        const cid = await this.getPubChemCID(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
         console.log('找到 PubChem CID:', cid);
-        
-        // 使用CID获取CAS
-        const casUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
-        const casResponse = await fetch(casUrl);
-        if (!casResponse.ok) {
-          throw new Error(`CAS 查询失败: ${casResponse.status}`);
-        }
-        
-        const casData = await casResponse.json();
-        const synonyms = casData.InformationList?.Information?.[0]?.Synonym || [];
-        
-        // 查找CAS号 - 使用标准格式验证
-        const casNumber = synonyms.find(syn => {
-          // CAS号标准格式：多位数字-两位数字-一位数字
-          const casRegex = /^\d+-\d{2}-\d$/;
-          // 排除EC编号（通常以EC开头）
-          return casRegex.test(syn) && !syn.startsWith('EC');
-        });
-        
+        const casNumber = await getCASByCID(cid);
         if (casNumber) {
           try {
             await navigator.clipboard.writeText(casNumber);
@@ -215,10 +184,8 @@ export default {
               document.body.appendChild(textArea);
               textArea.focus();
               textArea.select();
-              
               const successful = document.execCommand('copy');
               document.body.removeChild(textArea);
-              
               if (successful) {
                 alert(`CAS ${casNumber} 已复制`);
               } else {
@@ -247,16 +214,6 @@ export default {
       this.$emit('show-3d', this.smilesValue);
     },
 
-    async getIUPACNameByCID(cid) {
-      const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;
-      const nameResponse = await fetch(nameUrl);
-      if (!nameResponse.ok) {
-        throw new Error('获取 IUPACName 失败');
-      }
-      const nameData = await nameResponse.json();
-      return nameData.PropertyTable?.Properties?.[0]?.IUPACName || null;
-    },
-
     async handlePubChemImage() {
       if (!this.smilesValue) {
         return;
@@ -265,7 +222,7 @@ export default {
       try {
         console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
         
-        const cid = await this.getPubChemCID(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
@@ -274,7 +231,7 @@ export default {
         
         let compoundName = `CID_${cid}`;
         try {
-          const iupacName = await this.getIUPACNameByCID(cid);
+          const iupacName = await getIUPACNameByCID(cid);
           if (iupacName) {
             compoundName = iupacName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
           }
@@ -320,44 +277,26 @@ export default {
       }
       this.loading = true;
       try {
-        const cid = await this.getPubChemCID(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const data = await this.getPubChemData(cid);
-
-        function findDrugBankId(sections) {
-          for (const section of sections || []) {
-            if (section.TOCHeading === 'DrugBank ID') {
-              const info = section.Information?.[0];
-              if (info) {
-                if (info.URL) {
-                  return { id: info.Value?.StringWithMarkup?.[0]?.String, url: info.URL };
-                }
-                if (info.Value?.StringWithMarkup?.[0]?.String) {
-                  const id = info.Value.StringWithMarkup[0].String;
-                  return { id, url: `https://go.drugbank.com/drugs/${id}` };
-                }
-              }
-            }
-            if (section.Section) {
-              const result = findDrugBankId(section.Section);
-              if (result) return result;
-            }
-          }
-          return null;
-        }
-
+        const data = await getPubChemData(cid);
         const result = findDrugBankId(data.Record?.Section);
-
         if (result && result.url) {
           window.open(result.url, '_blank');
         } else {
-          alert('未找到 DrugBank ID');
+          const casNumber = await getCASByCID(cid);
+          if (casNumber) {
+            const url = `https://go.drugbank.com/unearth/q?searcher=drugs&query=${encodeURIComponent(casNumber)}`;
+            window.open(url, '_blank');
+          } else {
+            alert('未找到 DrugBank ID 或 CAS 号');
+          }
         }
       } catch (e) {
-        alert('获取 DrugBank ID 失败');
+        alert('获取 DrugBank 信息失败');
       } finally {
         this.loading = false;
       }
@@ -369,12 +308,12 @@ export default {
       }
       this.loading = true;
       try {
-        const cid = await this.getPubChemCID(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const iupacName = await this.getIUPACNameByCID(cid);
+        const iupacName = await getIUPACNameByCID(cid);
         if (iupacName) {
           try {
             await navigator.clipboard.writeText(iupacName);
@@ -398,40 +337,13 @@ export default {
       }
       this.loading = true;
       try {
-        const cid = await this.getPubChemCID(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const data = await this.getPubChemData(cid);
-
-        function findWikipediaLink(sections, recordTitle) {
-          for (const section of sections || []) {
-            if (section.TOCHeading === 'Wikipedia') {
-              const information = section.Information || [];
-              if (information.length > 1 && recordTitle) {
-                for (const info of information) {
-                  const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String;
-                  if (wikiTitle && recordTitle.toLowerCase().includes(wikiTitle.toLowerCase())) {
-                    return info.URL;
-                  }
-                }
-              }
-              const firstInfo = information[0];
-              if (firstInfo && firstInfo.URL) {
-                return firstInfo.URL;
-              }
-            }
-            if (section.Section) {
-              const result = findWikipediaLink(section.Section, recordTitle);
-              if (result) return result;
-            }
-          }
-          return null;
-        }
-
+        const data = await getPubChemData(cid);
         const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
-
         if (wikipediaUrl) {
           window.open(wikipediaUrl, '_blank');
         } else {
@@ -442,6 +354,23 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    handleDrugBankSelect(event) {
+      const value = event.target.value;
+      if (!this.smilesValue || !value) return;
+      if (value === 'exact') {
+        this.handleGetDrugBank();
+      } else if (value === 'fuzzy') {
+        this.handleDrugBankFuzzy();
+      }
+      event.target.value = '';
+    },
+
+    handleDrugBankFuzzy() {
+      if (!this.smilesValue) return;
+      const url = `https://go.drugbank.com/structures/search/small_molecule_drugs/structure?utf8=✓&searcher=structure&structure_search_type=substructure&structure=${encodeURIComponent(this.smilesValue)}#results`;
+      window.open(url, '_blank');
     }
   }
 }
@@ -469,7 +398,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 725px;
+  max-width: 736px;
   gap: 4px;
 }
 
@@ -509,7 +438,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 760px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;

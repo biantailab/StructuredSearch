@@ -11,7 +11,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [molview](https://molview.org)
 
 > [!tip]
-> DrugBank和Wikipedia跳转链接来自PubChem JSON
+> DrugBank exact和Wikipedia跳转链接来自PubChem JSON
 
 - [drugbank](https://go.drugbank.com)
 - [wikipedia](https://en.wikipedia.org)
@@ -23,19 +23,23 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## 功能
 
 - smiles与结构式互相转换
-- PubChem搜索
-- HNMR搜索
-- DrugBank搜索
-- Wikipedia搜索
 - Example:
     - Benzyl titanium
     - Pregabalin
     - Fluoxetine
+- Clear
+- Copy
 - 获取CAS
 - 获取IUPACName
-- 获取img
+- 获取Img
 - 3D可视化
     - 可与结构式，smiles进行实时更新
     - 种类
         | ![ball](imgs/ball.png) | ![stick](imgs/stick.png) | ![vdw](imgs/vdw.png) | ![wireframe](imgs/wireframe.png) |
         |---|---|---|---|
+- HNMR搜索
+- PubChem搜索
+- Wikipedia搜索
+- DrugBank搜索
+    - exact
+    - fuzzy

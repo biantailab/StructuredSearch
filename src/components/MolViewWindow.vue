@@ -13,7 +13,7 @@
           {{ mode.label }}
         </button>
       </div>
-      <button @click="close" class="close-button">×</button>
+      <button @click="close" class="close-button"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 12 16"><!-- Icon from FormKit Icons by FormKit, Inc - https://github.com/formkit/formkit/blob/master/packages/icons/LICENSE --><path fill="currentColor" d="M10 12.5a.47.47 0 0 1-.35-.15l-8-8c-.2-.2-.2-.51 0-.71s.51-.2.71 0l7.99 8.01c.2.2.2.51 0 .71c-.1.1-.23.15-.35.15Z"/><path fill="currentColor" d="M2 12.5a.47.47 0 0 1-.35-.15c-.2-.2-.2-.51 0-.71l8-7.99c.2-.2.51-.2.71 0s.2.51 0 .71l-8.01 7.99c-.1.1-.23.15-.35.15"/></svg></button>
     </div>
     <div class="view-content">
       <iframe 
@@ -352,6 +352,15 @@ export default {
   border-bottom: 1px solid #ccc;
   user-select: none;
   touch-action: none;
+  height: 25px;
+}
+
+.molview-header span {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .mode-selector {
@@ -362,6 +371,7 @@ export default {
 
 .mode-selector button {
   font-size: 12px;
+  cursor: pointer;
 }
 
 .mode-selector button.active {
@@ -384,6 +394,15 @@ export default {
   font-size: 20px;
   cursor: pointer;
   padding: 0 8px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.close-button svg {
+  display: block;
+  height: 20px;
+  width: 20px;
 }
 
 .close-button:hover {
