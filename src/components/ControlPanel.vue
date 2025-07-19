@@ -40,6 +40,7 @@
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
         <button @click="handlePubChem">PubChem</button>
+        <button @click="handleGetWikipedia">Wikipedia</button>
         <button @click="handleGetDrugBank">DrugBank</button>
       </div>
     </div>
@@ -156,6 +157,15 @@ export default {
       } catch (e) {
         return null;
       }
+    },
+
+    async getPubChemData(cid) {
+      const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('获取 PubChem 数据失败');
+      }
+      return await response.json();
     },
 
     async handleGetCAS() {
@@ -315,12 +325,7 @@ export default {
           alert('未找到对应的化合物');
           return;
         }
-        const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('获取 DrugBank ID 失败');
-        }
-        const data = await response.json();
+        const data = await this.getPubChemData(cid);
 
         function findDrugBankId(sections) {
           for (const section of sections || []) {
@@ -385,6 +390,58 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    async handleGetWikipedia() {
+      if (!this.smilesValue) {
+        return;
+      }
+      this.loading = true;
+      try {
+        const cid = await this.getPubChemCID(this.smilesValue);
+        if (!cid) {
+          alert('未找到对应的化合物');
+          return;
+        }
+        const data = await this.getPubChemData(cid);
+
+        function findWikipediaLink(sections, recordTitle) {
+          for (const section of sections || []) {
+            if (section.TOCHeading === 'Wikipedia') {
+              const information = section.Information || [];
+              if (information.length > 1 && recordTitle) {
+                for (const info of information) {
+                  const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String;
+                  if (wikiTitle && recordTitle.toLowerCase().includes(wikiTitle.toLowerCase())) {
+                    return info.URL;
+                  }
+                }
+              }
+              const firstInfo = information[0];
+              if (firstInfo && firstInfo.URL) {
+                return firstInfo.URL;
+              }
+            }
+            if (section.Section) {
+              const result = findWikipediaLink(section.Section, recordTitle);
+              if (result) return result;
+            }
+          }
+          return null;
+        }
+
+        const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
+
+        if (wikipediaUrl) {
+          window.open(wikipediaUrl, '_blank');
+        } else {
+          alert('未找到 Wikipedia 链接');
+        }
+      } catch (e) {
+        alert('获取 Wikipedia 链接失败');
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }
@@ -412,7 +469,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 649px;
+  max-width: 725px;
   gap: 4px;
 }
 
@@ -452,7 +509,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 675px) {
+@media screen and (max-width: 750px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;

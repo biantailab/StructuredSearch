@@ -9,7 +9,12 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [nmrdb](https://www.nmrdb.org)
 - [molview](https://molview.org)
+
+> [!tip]
+> DrugBank和Wikipedia跳转链接来自PubChem JSON
+
 - [drugbank](https://go.drugbank.com)
+- [wikipedia](https://en.wikipedia.org)
 
 ## 预览
 
@@ -21,6 +26,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - PubChem搜索
 - HNMR搜索
 - DrugBank搜索
+- Wikipedia搜索
 - Example:
     - Benzyl titanium
     - Pregabalin
