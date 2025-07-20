@@ -473,6 +473,11 @@ export default {
   flex-wrap: wrap;
 }
 
+.button-group button,
+.button-group select {
+  cursor: pointer;
+}
+
 .loading-overlay {
   position: fixed;
   top: 0;
