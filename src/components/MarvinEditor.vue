@@ -37,7 +37,7 @@ export default {
 }
 @media screen and (max-width: 640px) {
   .control-panel {
-    height: 80vh;
+    height: 75vh;
     margin-bottom: 0;
     padding: 2px;
   }

@@ -9,7 +9,7 @@
     />
     <div class="chemaxon-corner">
       <a href="http://www.chemaxon.com/" target="_blank" rel="noopener">
-        <img src="/imgs/chemaxon.png" alt="Chemaxon" style="height:30px;" />
+        <img src="/imgs/chemaxon.png" alt="Chemaxon" />
       </a>
     </div>
   </div>
@@ -107,5 +107,15 @@ export default {
   background: rgba(0,0,0,0.0);
   padding: 0;
   border-radius: 8px;
+}
+
+.chemaxon-corner img {
+  height: 30px;
+}
+
+@media (max-width: 640px) {
+  .chemaxon-corner img {
+    height: 20px;
+  }
 }
 </style> 
