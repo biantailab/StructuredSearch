@@ -66,27 +66,41 @@ export function findDrugBankId(sections) {
   return null;
 }
 
-export function findWikipediaLink(sections, recordTitle) {
+export function findWikipediaLink(sections, recordTitle, synonyms = []) {
   for (const section of sections || []) {
     if (section.TOCHeading === 'Wikipedia') {
       const information = section.Information || [];
-      if (information.length > 1 && recordTitle) {
+      if (information.length > 0) {
+        const titlesToMatch = [recordTitle, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
+        
         for (const info of information) {
-          const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String;
-          if (wikiTitle && recordTitle.toLowerCase().includes(wikiTitle.toLowerCase())) {
+          const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
+          if (wikiTitle && titlesToMatch.includes(wikiTitle)) {
             return info.URL;
           }
         }
-      }
-      const firstInfo = information[0];
-      if (firstInfo && firstInfo.URL) {
-        return firstInfo.URL;
+
+        for (const info of information) {
+          const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
+          if (wikiTitle) {
+            for (const titleToMatch of titlesToMatch) {
+              if (titleToMatch.includes(wikiTitle) || wikiTitle.includes(titleToMatch)) {
+                return info.URL;
+              }
+            }
+          }
+        }
+        
+        const firstInfo = information[1];
+        if (firstInfo && firstInfo.URL) {
+          return firstInfo.URL;
+        }
       }
     }
     if (section.Section) {
-      const result = findWikipediaLink(section.Section, recordTitle);
+      const result = findWikipediaLink(section.Section, recordTitle, synonyms);
       if (result) return result;
     }
   }
   return null;
-} 
+}
