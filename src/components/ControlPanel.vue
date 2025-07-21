@@ -37,9 +37,9 @@
         <select @change="handleGetSelect" class="get-select">
           <option value="">Get:</option>
           <option value="cas">CAS</option>
-          <option value="iupac">Name</option>
-          <option value="img">PNG</option>
-          <option value="sdf">SDF</option>
+          <option value="iupac" title="IUPACName">Name</option>
+          <option value="img" title="download">PNG</option>
+          <option value="sdf" title="download">SDF</option>
         </select>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>

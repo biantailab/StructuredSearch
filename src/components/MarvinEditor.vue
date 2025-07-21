@@ -37,15 +37,9 @@ export default {
 }
 @media screen and (max-width: 640px) {
   .control-panel {
-    height: 75vh;
+    height: 80vh;
     margin-bottom: 0;
     padding: 2px;
-  }
-  
-  .marvin-frame {
-    width: 100%;
-    height: 75vh;
-    border: none;
   }
 }
 </style> 
