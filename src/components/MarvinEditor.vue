@@ -41,11 +41,5 @@ export default {
     margin-bottom: 0;
     padding: 2px;
   }
-  
-  .marvin-frame {
-    width: 100%;
-    height: 75vh;
-    border: none;
-  }
 }
 </style> 
