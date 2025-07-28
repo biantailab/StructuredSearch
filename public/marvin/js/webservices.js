@@ -1,7 +1,7 @@
 // Define the default location of webservices
 
 function getDefaultServicesPrefix() {
-    var servername = "https://marvinjs.benzyl-titanium.workers.dev/";
+    var servername = "https://marvinjs.10894893.xyz"; // https://marvinjs.benzyl-titanium.workers.dev
     var webapp = "";
     return servername + webapp;
 }
