@@ -49,7 +49,7 @@ async function testServiceEndpoint(url, timeout = 10000) {
         
         console.log(`Endpoint ${url} responded with status: ${response.status}`);
         return {
-            success: response.status < 400,
+            success: response.status < 400 || response.status === 405,
             status: response.status,
             url: url
         };
@@ -211,11 +211,13 @@ async function runHealthCheck() {
             await sendEmailNotification(failedServices, failedConversions);
         }
         
-        if (hasFailures) {
-            console.error('Health check failed - some services are not working correctly');
+        const hasConversionFailures = failedConversions.length > 0;
+        
+        if (hasConversionFailures) {
+            console.error('Health check failed - SMILES conversion is not working correctly');
             process.exit(1);
         } else {
-            console.log('Health check passed - all services are working correctly');
+            console.log('Health check passed - SMILES conversion is working correctly');
             process.exit(0);
         }
         

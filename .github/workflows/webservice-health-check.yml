@@ -44,57 +44,62 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const title = `🚨 Webservice Health Check Failed - ${new Date().toISOString().split('T')[0]}`;
-          const body = `
-          ## Webservice Health Check Failed
-          
-          **Time:** ${new Date().toISOString()}
-          **Workflow:** ${context.workflow}
-          **Run ID:** ${context.runId}
-          
-          ### Issue Details
-          One or more webservices are not responding correctly for SMILES conversion.
-          
-          ### Affected Services
-          The following services may be affected:
-          - SMILES to Structure conversion
-          - Structure to SMILES conversion
-          - Molecular format conversion
-          
-          ### Next Steps
-          1. Check the webservice endpoints in \`public/marvin/js/webservices.js\`
-          2. Verify the server status at: https://marvinjs.agungxenos.eu.org
-          3. Test the conversion functionality manually
-          4. Update the webservice URLs if necessary
-          
-          ### Logs
-          Check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed logs.
-          
-          ---
-          *This issue was automatically created by the webservice health check workflow.*
-          `;
-          
-          // Check if similar issue already exists
-          const existingIssues = await github.rest.issues.listForRepo({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            labels: ['webservice-health', 'automated']
-          });
-          
-          const hasOpenIssue = existingIssues.data.some(issue => 
-            issue.title.includes('Webservice Health Check Failed')
-          );
-          
-          if (!hasOpenIssue) {
-            await github.rest.issues.create({
+          try {
+            const title = `🚨 Webservice Health Check Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Webservice Health Check Failed
+            
+            **Time:** ${new Date().toISOString()}
+            **Workflow:** ${context.workflow}
+            **Run ID:** ${context.runId}
+            
+            ### Issue Details
+            One or more webservices are not responding correctly for SMILES conversion.
+            
+            ### Affected Services
+            The following services may be affected:
+            - SMILES to Structure conversion
+            - Structure to SMILES conversion
+            - Molecular format conversion
+            
+            ### Next Steps
+            1. Check the webservice endpoints in \`public/marvin/js/webservices.js\`
+            2. Verify the server status at: https://marvinjs.agungxenos.eu.org
+            3. Test the conversion functionality manually
+            4. Update the webservice URLs if necessary
+            
+            ### Logs
+            Check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed logs.
+            
+            ---
+            *This issue was automatically created by the webservice health check workflow.*
+            `;
+            
+            // Check if similar issue already exists
+            const existingIssues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: title,
-              body: body,
-              labels: ['bug', 'webservice-health', 'automated', 'high-priority']
+              state: 'open',
+              labels: ['webservice-health', 'automated']
             });
-            console.log('Created new issue for webservice failure');
-          } else {
-            console.log('Similar issue already exists, skipping creation');
+            
+            const hasOpenIssue = existingIssues.data.some(issue => 
+              issue.title.includes('Webservice Health Check Failed')
+            );
+            
+            if (!hasOpenIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['bug', 'webservice-health', 'automated', 'high-priority']
+              });
+              console.log('Created new issue for webservice failure');
+            } else {
+              console.log('Similar issue already exists, skipping creation');
+            }
+          } catch (error) {
+            console.log('Could not create issue (Issues may be disabled):', error.message);
+            console.log('Webservice health check failed - check email notifications or workflow logs for details');
           }
