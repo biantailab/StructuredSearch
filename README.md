@@ -32,8 +32,6 @@ Powered by [Chemaxon](https://chemaxon.com)
 - Get:
     - CAS
     - (IUPAC)Name
-    - PNG
-    - SDF
 - 3D可视化
     - 可与结构式，smiles进行实时更新
     - 种类
