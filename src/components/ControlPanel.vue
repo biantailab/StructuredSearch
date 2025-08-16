@@ -38,8 +38,6 @@
           <option value="">Get:</option>
           <option value="cas">CAS</option>
           <option value="iupac" title="IUPACName">Name</option>
-          <option value="img" title="download">PNG</option>
-          <option value="sdf" title="download">SDF</option>
         </select>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
@@ -57,13 +55,15 @@
 
 <script>
 import {
-  getPubChemCID,
-  getCASByCID,
-  getPubChemData,
-  getIUPACNameByCID,
-  findDrugBankId,
-  findWikipediaLink
+  getCASBySmiles,
+  getIUPACNameBySmiles,
+  getWikipediaUrlBySmiles,
 } from '@/utils/pubchem';
+import { 
+  getDrugBankInfoBySmiles,
+  getDrugBankFuzzySearchUrl,
+   getDrugBankUrlByCAS 
+} from '@/utils/drugbank';
 
 export default {
   name: 'ControlPanel',
@@ -161,50 +161,25 @@ export default {
     },
 
     async handleGetCAS() {
-      if (!this.smilesValue) {
-        return;
-      }
+      if (!this.smilesValue) return;
       this.loading = true;
       try {
-        console.log('正在查询 CAS，SMILES:', this.smilesValue);
-        const cid = await getPubChemCID(this.smilesValue);
+        const { cid, cas } = await getCASBySmiles(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        console.log('找到 PubChem CID:', cid);
-        const casNumber = await getCASByCID(cid);
-        if (casNumber) {
+        if (cas) {
           try {
-            await navigator.clipboard.writeText(casNumber);
-            alert(`CAS ${casNumber} 已复制`);
+            await navigator.clipboard.writeText(cas);
+            alert(`CAS ${cas} 已复制`);
           } catch (err) {
-            try {
-              const textArea = document.createElement('textarea');
-              textArea.value = casNumber;
-              textArea.style.position = 'fixed';
-              textArea.style.left = '-999999px';
-              textArea.style.top = '-999999px';
-              document.body.appendChild(textArea);
-              textArea.focus();
-              textArea.select();
-              const successful = document.execCommand('copy');
-              document.body.removeChild(textArea);
-              if (successful) {
-                alert(`CAS ${casNumber} 已复制`);
-              } else {
-                alert('复制失败，请手动复制');
-              }
-            } catch (fallbackErr) {
-              console.error('复制失败:', fallbackErr);
-              alert('复制失败，请手动复制');
-            }
+            alert(`CAS ${cas} 复制失败，请手动复制`);
           }
         } else {
           alert('未找到 CAS 号');
         }
       } catch (error) {
-        console.error('获取 CAS 时出错:', error);
         alert('获取 CAS 失败，请检查网络连接');
       } finally {
         this.loading = false;
@@ -218,86 +193,22 @@ export default {
       this.$emit('show-3d', this.smilesValue);
     },
 
-    async handlePubChemImage() {
-      if (!this.smilesValue) {
-        return;
-      }
-      this.loading = true;
-      try {
-        console.log('正在获取PubChem图片，SMILES:', this.smilesValue);
-        
-        const cid = await getPubChemCID(this.smilesValue);
-        if (!cid) {
-          alert('未找到对应的化合物');
-          return;
-        }
-        console.log('找到 PubChem CID:', cid);
-        
-        let compoundName = `CID_${cid}`;
-        try {
-          const iupacName = await getIUPACNameByCID(cid);
-          if (iupacName) {
-            compoundName = iupacName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
-          }
-        } catch (e) {
-          // 保持默认 CID 名称
-        }
-        
-        const imageUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/PNG`;
-        console.log('PubChem 图片下载 URL:', imageUrl);
-        
-        const imageResponse = await fetch(imageUrl);
-        if (!imageResponse.ok) {
-          throw new Error(`图片下载失败: ${imageResponse.status}`);
-        }
-        
-        const imageBlob = await imageResponse.blob();
-        const downloadUrl = URL.createObjectURL(imageBlob);
-        
-        const downloadLink = document.createElement('a');
-        downloadLink.href = downloadUrl;
-        downloadLink.download = `${compoundName}_2D_structure.png`;
-        downloadLink.style.display = 'none';
-        
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        URL.revokeObjectURL(downloadUrl);
-        
-        console.log(`图片已下载: ${compoundName}_2D_structure.png`);
-        
-      } catch (error) {
-        console.error('获取PubChem图片时出错:', error);
-        alert('获取PubChem图片失败，请检查网络连接');
-      } finally {
-        this.loading = false;
-      }
-    },
-
     async handleGetDrugBank() {
-      if (!this.smilesValue) {
-        return;
-      }
+      if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const cid = await getPubChemCID(this.smilesValue);
+        const { cid, drugBankUrl, cas } = await getDrugBankInfoBySmiles(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const data = await getPubChemData(cid);
-        const result = findDrugBankId(data.Record?.Section);
-        if (result && result.url) {
-          window.open(result.url, '_blank');
+        if (drugBankUrl) {
+          window.open(drugBankUrl, '_blank');
+        } else if (cas) {
+          const url = getDrugBankUrlByCAS(cas);
+          window.open(url, '_blank');
         } else {
-          const casNumber = await getCASByCID(cid);
-          if (casNumber) {
-            const url = `https://go.drugbank.com/unearth/q?searcher=drugs&query=${encodeURIComponent(casNumber)}`;
-            window.open(url, '_blank');
-          } else {
-            alert('未找到 DrugBank ID 或 CAS 号');
-          }
+          alert('未找到 DrugBank ID 或 CAS 号');
         }
       } catch (e) {
         alert('获取 DrugBank 信息失败');
@@ -307,17 +218,14 @@ export default {
     },
 
     async handleGetIUPACName() {
-      if (!this.smilesValue) {
-        return;
-      }
+      if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const cid = await getPubChemCID(this.smilesValue);
+        const { cid, iupacName } = await getIUPACNameBySmiles(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const iupacName = await getIUPACNameByCID(cid);
         if (iupacName) {
           try {
             await navigator.clipboard.writeText(iupacName);
@@ -336,18 +244,14 @@ export default {
     },
 
     async handleGetWikipedia() {
-      if (!this.smilesValue) {
-        return;
-      }
+      if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const cid = await getPubChemCID(this.smilesValue);
+        const { cid, wikipediaUrl } = await getWikipediaUrlBySmiles(this.smilesValue);
         if (!cid) {
           alert('未找到对应的化合物');
           return;
         }
-        const data = await getPubChemData(cid);
-        const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
         if (wikipediaUrl) {
           window.open(wikipediaUrl, '_blank');
         } else {
@@ -373,7 +277,7 @@ export default {
 
     handleDrugBankFuzzy() {
       if (!this.smilesValue) return;
-      const url = `https://go.drugbank.com/structures/search/small_molecule_drugs/structure?utf8=✓&searcher=structure&structure_search_type=substructure&structure=${encodeURIComponent(this.smilesValue)}#results`;
+      const url = getDrugBankFuzzySearchUrl(this.smilesValue);
       window.open(url, '_blank');
     },
 
@@ -384,42 +288,9 @@ export default {
         this.handleGetCAS();
       } else if (value === 'iupac') {
         this.handleGetIUPACName();
-      } else if (value === 'img') {
-        this.handlePubChemImage();
-      } else if (value === 'sdf') {
-        this.handleGetSDF();
       }
       event.target.value = '';
     },
-
-    async handleGetSDF() {
-      if (!this.smilesValue) return;
-      this.loading = true;
-      try {
-        const cid = await getPubChemCID(this.smilesValue);
-        if (!cid) {
-          alert('未找到对应的化合物');
-          return;
-        }
-        const baseUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/record/SDF`;
-        let sdfUrl = `${baseUrl}?record_type=3d&response_type=save&response_basename=Conformer3D_COMPOUND_CID_${cid}`;
-        let response = await fetch(sdfUrl, { method: 'HEAD' });
-        if (!response.ok) {
-          sdfUrl = `${baseUrl}?record_type=2d&response_type=save&response_basename=Compound2D_COMPOUND_CID_${cid}`;
-          response = await fetch(sdfUrl, { method: 'HEAD' });
-          if (!response.ok) {
-            alert('该化合物在PubChem中没有3D或2D结构数据');
-            return;
-          }
-        }
-        window.location.href = sdfUrl;
-      } catch (error) {
-        console.error('获取SDF时出错:', error);
-        alert('获取SDF失败，请检查网络连接');
-      } finally {
-        this.loading = false;
-      }
-    }
   }
 }
 </script>
