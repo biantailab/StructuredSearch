@@ -44,42 +44,18 @@ export async function getIUPACNameByCID(cid) {
   return nameData.PropertyTable?.Properties?.[0]?.IUPACName || null;
 }
 
-export function findDrugBankId(sections) {
-  for (const section of sections || []) {
-    if (section.TOCHeading === 'DrugBank ID') {
-      const info = section.Information?.[0];
-      if (info) {
-        if (info.URL) {
-          return { id: info.Value?.StringWithMarkup?.[0]?.String, url: info.URL };
-        }
-        if (info.Value?.StringWithMarkup?.[0]?.String) {
-          const id = info.Value.StringWithMarkup[0].String;
-          return { id, url: `https://go.drugbank.com/drugs/${id}` };
-        }
-      }
-    }
-    if (section.Section) {
-      const result = findDrugBankId(section.Section);
-      if (result) return result;
-    }
-  }
-  return null;
-}
-
 export function findWikipediaLink(sections, recordTitle, synonyms = []) {
   for (const section of sections || []) {
     if (section.TOCHeading === 'Wikipedia') {
       const information = section.Information || [];
       if (information.length > 0) {
         const titlesToMatch = [recordTitle, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
-        
         for (const info of information) {
           const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
           if (wikiTitle && titlesToMatch.includes(wikiTitle)) {
             return info.URL;
           }
         }
-
         for (const info of information) {
           const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
           if (wikiTitle) {
@@ -90,7 +66,6 @@ export function findWikipediaLink(sections, recordTitle, synonyms = []) {
             }
           }
         }
-        
         const firstInfo = information[1];
         if (firstInfo && firstInfo.URL) {
           return firstInfo.URL;
@@ -103,4 +78,26 @@ export function findWikipediaLink(sections, recordTitle, synonyms = []) {
     }
   }
   return null;
+}
+
+export async function getCASBySmiles(smiles) {
+  const cid = await getPubChemCID(smiles);
+  if (!cid) return { cid: null, cas: null };
+  const cas = await getCASByCID(cid);
+  return { cid, cas };
+}
+
+export async function getIUPACNameBySmiles(smiles) {
+  const cid = await getPubChemCID(smiles);
+  if (!cid) return { cid: null, iupacName: null };
+  const iupacName = await getIUPACNameByCID(cid);
+  return { cid, iupacName };
+}
+
+export async function getWikipediaUrlBySmiles(smiles) {
+  const cid = await getPubChemCID(smiles);
+  if (!cid) return { cid: null, wikipediaUrl: null };
+  const data = await getPubChemData(cid);
+  const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
+  return { cid, wikipediaUrl };
 }
