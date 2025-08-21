@@ -43,3 +43,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - DrugBank搜索
     - exact
     - fuzzy
+
+## 更多
+
+- [KetchKekuleSearch](https://github.com/biantailab/KetchKekuleSearch) - 基于Ketcher和Kekule.js从分子结构中搜索化合物信息
