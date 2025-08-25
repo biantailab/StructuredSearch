@@ -24,9 +24,9 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 - smiles与结构式互相转换
 - Example:
-    - Benzyl titanium
-    - Pregabalin
-    - Fluoxetine
+    - Benzyl titanium (苄钛)
+    - Pregabalin (普瑞巴林)
+    - Fluoxetine (氟西汀)
 - Clear
 - Copy
 - Get:
@@ -42,8 +42,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - PubChem搜索
 - Wikipedia搜索
 - DrugBank搜索
-    - exact
-    - fuzzy
+    - exact (详细)
+    - fuzzy (模糊)
 
 ## 更多
 
