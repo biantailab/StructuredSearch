@@ -113,7 +113,7 @@ export default {
   height: 30px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 655px) {
   .chemaxon-corner img {
     height: 20px;
   }
