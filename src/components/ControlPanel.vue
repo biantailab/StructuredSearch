@@ -38,6 +38,7 @@
           <option value="">Get:</option>
           <option value="cas">CAS</option>
           <option value="iupac" title="IUPACName">Name</option>
+          <option value="formula" title="Molecular Formula">Formula</option>
         </select>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
@@ -55,9 +56,11 @@
 
 <script>
 import {
-  getCASBySmiles,
-  getIUPACNameBySmiles,
   getWikipediaUrlBySmiles,
+  getMolecularFormulaByCID,
+  getPubChemCID,
+  getCASByCID,
+  getIUPACNameByCID,
 } from '@/utils/pubchem';
 import { 
   getDrugBankInfoBySmiles,
@@ -79,6 +82,42 @@ export default {
     this.setupMessageListener();
   },
   methods: {
+    notifyCompoundNotFound() {
+      alert('未找到对应的化合物');
+    },
+
+    async copyTextToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (e) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          return ok;
+        } catch (_) {
+          return false;
+        }
+      }
+    },
+
+    async copyWithFeedback(label, value) {
+      const ok = await this.copyTextToClipboard(value);
+      if (ok) {
+        alert(`${label}: ${value}\n已复制到剪贴板`);
+      } else {
+        alert(`${label}: ${value}\n复制失败，请手动复制`);
+      }
+    },
+
     handleInput(event) {
       const value = event.target.value;
       this.smilesValue = value;
@@ -160,27 +199,39 @@ export default {
       }
     },
 
-    async handleGetCAS() {
+    async handleGet(type) {
       if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const { cid, cas } = await getCASBySmiles(this.smilesValue);
+        const cid = await getPubChemCID(this.smilesValue);
         if (!cid) {
-          alert('未找到对应的化合物');
+          this.notifyCompoundNotFound();
           return;
         }
-        if (cas) {
-          try {
-            await navigator.clipboard.writeText(cas);
-            alert(`CAS ${cas} 已复制`);
-          } catch (err) {
-            alert(`CAS ${cas} 复制失败，请手动复制`);
+        if (type === 'cas') {
+          const cas = await getCASByCID(cid);
+          if (cas) {
+            await this.copyWithFeedback('CAS', cas);
+          } else {
+            alert('未找到 CAS 号');
           }
-        } else {
-          alert('未找到 CAS 号');
+        } else if (type === 'iupac') {
+          const iupacName = await getIUPACNameByCID(cid);
+          if (iupacName) {
+            await this.copyWithFeedback('IUPACName', iupacName);
+          } else {
+            alert('未找到 IUPACName');
+          }
+        } else if (type === 'formula') {
+          const formula = await getMolecularFormulaByCID(cid);
+          if (formula) {
+            await this.copyWithFeedback('Molecular Formula', formula);
+          } else {
+            alert('未找到分子式');
+          }
         }
       } catch (error) {
-        alert('获取 CAS 失败，请检查网络连接');
+        alert('获取信息失败，请检查网络连接');
       } finally {
         this.loading = false;
       }
@@ -199,7 +250,7 @@ export default {
       try {
         const { cid, drugBankUrl, cas } = await getDrugBankInfoBySmiles(this.smilesValue);
         if (!cid) {
-          alert('未找到对应的化合物');
+          this.notifyCompoundNotFound();
           return;
         }
         if (drugBankUrl) {
@@ -218,29 +269,7 @@ export default {
     },
 
     async handleGetIUPACName() {
-      if (!this.smilesValue) return;
-      this.loading = true;
-      try {
-        const { cid, iupacName } = await getIUPACNameBySmiles(this.smilesValue);
-        if (!cid) {
-          alert('未找到对应的化合物');
-          return;
-        }
-        if (iupacName) {
-          try {
-            await navigator.clipboard.writeText(iupacName);
-            alert(`IUPACName: ${iupacName}\n已复制到剪贴板`);
-          } catch (err) {
-            alert(`IUPACName: ${iupacName}\n复制失败，请手动复制`);
-          }
-        } else {
-          alert('未找到 IUPACName');
-        }
-      } catch (error) {
-        alert('获取 IUPACName 失败，请检查网络连接');
-      } finally {
-        this.loading = false;
-      }
+      return this.handleGet('iupac');
     },
 
     async handleGetWikipedia() {
@@ -249,7 +278,7 @@ export default {
       try {
         const { cid, wikipediaUrl } = await getWikipediaUrlBySmiles(this.smilesValue);
         if (!cid) {
-          alert('未找到对应的化合物');
+          this.notifyCompoundNotFound();
           return;
         }
         if (wikipediaUrl) {
@@ -281,13 +310,15 @@ export default {
       window.open(url, '_blank');
     },
 
+    async handleGetFormula() {
+      return this.handleGet('formula');
+    },
+
     handleGetSelect(event) {
       const value = event.target.value;
       if (!this.smilesValue || !value) return;
-      if (value === 'cas') {
-        this.handleGetCAS();
-      } else if (value === 'iupac') {
-        this.handleGetIUPACName();
+      if (value === 'cas' || value === 'iupac' || value === 'formula') {
+        this.handleGet(value);
       }
       event.target.value = '';
     },
@@ -317,7 +348,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 615px;
+  max-width: 628px;
   gap: 4px;
 }
 
@@ -362,7 +393,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 640px) {
+@media screen and (max-width: 655px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
