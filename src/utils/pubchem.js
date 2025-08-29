@@ -76,7 +76,7 @@ export function findWikipediaLink(sections, recordTitle, synonyms = []) {
             }
           }
         }
-        const firstInfo = information[1];
+        const firstInfo = information[0];
         if (firstInfo && firstInfo.URL) {
           return firstInfo.URL;
         }
