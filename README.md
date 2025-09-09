@@ -2,6 +2,12 @@
 
 # StructuredSearch
 
+<p align="center">
+    简体中文 | <a href="README_en.md">English</a>
+</p>
+
+基于Marvin JS分子草图面板和网络服务的从分子结构搜索化合物信息
+
 Powered by [Chemaxon](https://chemaxon.com)
 
 ## 依赖
@@ -47,4 +53,4 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 更多
 
-- [KetchKekuleSearch](https://github.com/biantailab/KetchKekuleSearch) - 基于Ketcher和Kekule.js从分子结构中搜索化合物信息
+- [KetcherSearch](https://github.com/biantailab/KetcherSearch) - 基于Ketcher的纯前端实现smiles⇄mol的从分子结构中搜索化合物信息
