@@ -186,7 +186,7 @@ export default {
 
     handleHNMR() {
       if (this.smilesValue) {
-        const searchUrl = `https://www.nmrdb.org/new_predictor/index.shtml?v=v2.157.0&smiles=${encodeURIComponent(this.smilesValue)}`;
+        const searchUrl = `https://www.nmrdb.org/new_predictor/index.shtml?v=latest&smiles=${encodeURIComponent(this.smilesValue)}`;
         window.open(searchUrl, '_blank');
       }
     },
