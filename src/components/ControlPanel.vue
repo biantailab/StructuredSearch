@@ -138,6 +138,15 @@ export default {
           if (event.data.status === 'error') {
             console.error('SMILES 导入失败:', event.data.error);
           }
+        } else if (event.data?.type === 'iupacNameResult') {
+          if (this._iupacNameResolver) {
+            if (event.data.status === 'success') {
+              this._iupacNameResolver.resolve(event.data.value || null);
+            } else {
+              this._iupacNameResolver.resolve(null);
+            }
+            this._iupacNameResolver = null;
+          }
         } else if (event.data?.type === 'sketchCleared') {
           if (event.data.status === 'success') {
             this.smilesValue = '';
@@ -154,6 +163,24 @@ export default {
           '*'
         );
       }
+    },
+
+    requestIUPACNameFromMarvin() {
+      return new Promise((resolve) => {
+        const marvinIframe = document.getElementById('marvinFrame');
+        if (!marvinIframe?.contentWindow) {
+          resolve(null);
+          return;
+        }
+        this._iupacNameResolver = { resolve };
+        marvinIframe.contentWindow.postMessage({ type: 'getIUPACName' }, '*');
+        setTimeout(() => {
+          if (this._iupacNameResolver) {
+            this._iupacNameResolver = null;
+            resolve(null);
+          }
+        }, 6000);
+      });
     },
 
     handleClear() {
@@ -204,26 +231,36 @@ export default {
       this.loading = true;
       try {
         const cid = await getPubChemCID(this.smilesValue);
-        if (!cid) {
+        if (!cid && type !== 'iupac') {
           this.notifyCompoundNotFound();
           return;
         }
         if (type === 'cas') {
-          const cas = await getCASByCID(cid);
+          const cas = cid ? await getCASByCID(cid) : null;
           if (cas) {
             await this.copyWithFeedback('CAS', cas);
           } else {
             alert('未找到 CAS 号');
           }
         } else if (type === 'iupac') {
-          const iupacName = await getIUPACNameByCID(cid);
+          let iupacName = null;
+          if (cid) {
+            try {
+              iupacName = await getIUPACNameByCID(cid);
+            } catch (_) {
+              // ignore and try marvin fallback
+            }
+          }
+          if (!iupacName) {
+            iupacName = await this.requestIUPACNameFromMarvin();
+          }
           if (iupacName) {
             await this.copyWithFeedback('IUPACName', iupacName);
           } else {
             alert('未找到 IUPACName');
           }
         } else if (type === 'formula') {
-          const formula = await getMolecularFormulaByCID(cid);
+          const formula = cid ? await getMolecularFormulaByCID(cid) : null;
           if (formula) {
             await this.copyWithFeedback('Molecular Formula', formula);
           } else {

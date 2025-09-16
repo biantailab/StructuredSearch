@@ -38,6 +38,21 @@ let PARENT_FRAME_ORIGIN = null; // 用于存储父窗口的源
                                     }
                                 });
                         }
+                    } else if (messageData.type === 'getIUPACName') {
+                        if (!PARENT_FRAME_ORIGIN) {
+                            console.warn("iframe: 父窗口源未知，无法返回 IUPAC 名称。");
+                            return;
+                        }
+                        if (marvin.sketcherInstance) {
+                            marvin.sketcherInstance.exportStructure("name")
+                                .then(function(name) {
+                                    window.parent.postMessage({ type: 'iupacNameResult', status: 'success', value: name }, PARENT_FRAME_ORIGIN);
+                                })
+                                .catch(function(error) {
+                                    console.error('iframe: 导出 IUPAC 名称错误:', error);
+                                    window.parent.postMessage({ type: 'iupacNameResult', status: 'error', error: error.message || String(error) }, PARENT_FRAME_ORIGIN);
+                                });
+                        }
                     } else if (messageData.type === 'clearSketch') {
                         console.log("iframe: 接收到清空指令");
                         if (marvin.sketcherInstance) {
