@@ -15,8 +15,7 @@ export async function getPubChemCID(smiles) {
   }
 }
 
-export async function getPubChemCompoundUrlBySmiles(smiles) {
-  const cid = await getPubChemCID(smiles);
+export function getPubChemCompoundUrlByCID(cid) {
   if (!cid) return null;
   return `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
 }
@@ -110,8 +109,7 @@ export async function getIUPACNameBySmiles(smiles) {
   return { cid, iupacName };
 }
 
-export async function getWikipediaUrlBySmiles(smiles) {
-  const cid = await getPubChemCID(smiles);
+export async function getWikipediaUrlByCID(cid) {
   if (!cid) return { cid: null, wikipediaUrl: null };
   const data = await getPubChemData(cid);
   const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
