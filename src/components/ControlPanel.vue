@@ -61,6 +61,7 @@ import {
   getPubChemCID,
   getCASByCID,
   getIUPACNameByCID,
+  getPubChemCompoundUrlBySmiles,
 } from '@/utils/pubchem';
 import { 
   getDrugBankInfoBySmiles,
@@ -204,10 +205,20 @@ export default {
       }
     },
 
-    handlePubChem() {
-      if (this.smilesValue) {
-        const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/#query=${encodeURIComponent(this.smilesValue)}`;
-        window.open(searchUrl, '_blank');
+    async handlePubChem() {
+      if (!this.smilesValue) return;
+      this.loading = true;
+      try {
+        const url = await getPubChemCompoundUrlBySmiles(this.smilesValue);
+        if (!url) {
+          this.notifyCompoundNotFound();
+          return;
+        }
+        window.open(url, '_blank');
+      } catch (e) {
+        alert('获取 PubChem CID 失败，请检查网络连接');
+      } finally {
+        this.loading = false;
       }
     },
 

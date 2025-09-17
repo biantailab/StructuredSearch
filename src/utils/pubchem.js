@@ -15,6 +15,12 @@ export async function getPubChemCID(smiles) {
   }
 }
 
+export async function getPubChemCompoundUrlBySmiles(smiles) {
+  const cid = await getPubChemCID(smiles);
+  if (!cid) return null;
+  return `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
+}
+
 export async function getCASByCID(cid) {
   const casUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
   const casResponse = await fetch(casUrl);
