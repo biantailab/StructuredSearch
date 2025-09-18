@@ -56,12 +56,12 @@
 
 <script>
 import {
-  getWikipediaUrlBySmiles,
+  getWikipediaUrlByCID,
   getMolecularFormulaByCID,
   getPubChemCID,
   getCASByCID,
   getIUPACNameByCID,
-  getPubChemCompoundUrlBySmiles,
+  getPubChemCompoundUrlByCID,
 } from '@/utils/pubchem';
 import { 
   getDrugBankInfoBySmiles,
@@ -76,15 +76,35 @@ export default {
       smilesValue: '',
       iframeOrigin: null,
       loading: false,
-      drugBankMode: 'exact'
+      drugBankMode: 'exact',
+      messages: {
+        compoundNotFound: '未找到对应的化合物',
+        copySuccess: (label, value) => `${label}: ${value}\n已复制到剪贴板`,
+        copyFail: (label, value) => `${label}: ${value}\n复制失败，请手动复制`,
+        pubchemFail: '获取 PubChem CID 失败，请检查网络连接',
+        casNotFound: '未找到 CAS 号',
+        iupacNotFound: '未找到 IUPACName',
+        formulaNotFound: '未找到分子式',
+        fetchFail: '获取信息失败，请检查网络连接',
+        drugbankNotFound: '未找到 DrugBank ID 或 CAS 号',
+        drugbankFail: '获取 DrugBank 信息失败',
+        wikipediaNotFound: '未找到 Wikipedia 链接',
+        wikipediaFail: '获取 Wikipedia 链接失败',
+        CAS: 'CAS',
+        IUPACName: 'IUPACName',
+        MolecularFormula: 'Molecular Formula',
+      },
+
+      currentCid: null,
+      lastCidSmiles: ''
     }
   },
   mounted() {
     this.setupMessageListener();
   },
   methods: {
-    notifyCompoundNotFound() {
-      alert('未找到对应的化合物');
+    notifyUser(message, type = 'info') {
+      alert(message);
     },
 
     async copyTextToClipboard(text) {
@@ -113,15 +133,17 @@ export default {
     async copyWithFeedback(label, value) {
       const ok = await this.copyTextToClipboard(value);
       if (ok) {
-        alert(`${label}: ${value}\n已复制到剪贴板`);
+        this.notifyUser(this.messages.copySuccess(label, value), 'success');
       } else {
-        alert(`${label}: ${value}\n复制失败，请手动复制`);
+        this.notifyUser(this.messages.copyFail(label, value), 'error');
       }
     },
 
     handleInput(event) {
       const value = event.target.value;
       this.smilesValue = value;
+      this.currentCid = null;
+      this.lastCidSmiles = '';
       this.sendSmilesToMarvin(value);
     },
 
@@ -205,18 +227,33 @@ export default {
       }
     },
 
+    async ensureCID() {
+      const smiles = (this.smilesValue || '').trim();
+      if (!smiles) return null;
+      if (this.currentCid && this.lastCidSmiles === smiles) {
+        return this.currentCid;
+      }
+      const cid = await getPubChemCID(smiles);
+      if (cid) {
+        this.currentCid = cid;
+        this.lastCidSmiles = smiles;
+      }
+      return cid || null;
+    },
+
     async handlePubChem() {
       if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const url = await getPubChemCompoundUrlBySmiles(this.smilesValue);
-        if (!url) {
-          this.notifyCompoundNotFound();
+        const cid = await this.ensureCID();
+        if (!cid) {
+          this.notifyUser(this.messages.compoundNotFound, 'warning');
           return;
         }
+        const url = getPubChemCompoundUrlByCID(cid);
         window.open(url, '_blank');
       } catch (e) {
-        alert('获取 PubChem CID 失败，请检查网络连接');
+        this.notifyUser(this.messages.pubchemFail, 'error');
       } finally {
         this.loading = false;
       }
@@ -241,45 +278,43 @@ export default {
       if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const cid = await getPubChemCID(this.smilesValue);
+        const cid = await this.ensureCID();
         if (!cid && type !== 'iupac') {
-          this.notifyCompoundNotFound();
+          this.notifyUser(this.messages.compoundNotFound, 'warning');
           return;
         }
         if (type === 'cas') {
           const cas = cid ? await getCASByCID(cid) : null;
           if (cas) {
-            await this.copyWithFeedback('CAS', cas);
+            await this.copyWithFeedback(this.messages.CAS, cas);
           } else {
-            alert('未找到 CAS 号');
+            this.notifyUser(this.messages.casNotFound, 'warning');
           }
         } else if (type === 'iupac') {
           let iupacName = null;
           if (cid) {
             try {
               iupacName = await getIUPACNameByCID(cid);
-            } catch (_) {
-              // ignore and try marvin fallback
-            }
+            } catch (_) {}
           }
           if (!iupacName) {
             iupacName = await this.requestIUPACNameFromMarvin();
           }
           if (iupacName) {
-            await this.copyWithFeedback('IUPACName', iupacName);
+            await this.copyWithFeedback(this.messages.IUPACName, iupacName);
           } else {
-            alert('未找到 IUPACName');
+            this.notifyUser(this.messages.iupacNotFound, 'warning');
           }
         } else if (type === 'formula') {
           const formula = cid ? await getMolecularFormulaByCID(cid) : null;
           if (formula) {
-            await this.copyWithFeedback('Molecular Formula', formula);
+            await this.copyWithFeedback(this.messages.MolecularFormula, formula);
           } else {
-            alert('未找到分子式');
+            this.notifyUser(this.messages.formulaNotFound, 'warning');
           }
         }
       } catch (error) {
-        alert('获取信息失败，请检查网络连接');
+        this.notifyUser(this.messages.fetchFail, 'error');
       } finally {
         this.loading = false;
       }
@@ -298,7 +333,7 @@ export default {
       try {
         const { cid, drugBankUrl, cas } = await getDrugBankInfoBySmiles(this.smilesValue);
         if (!cid) {
-          this.notifyCompoundNotFound();
+          this.notifyUser(this.messages.compoundNotFound, 'warning');
           return;
         }
         if (drugBankUrl) {
@@ -307,10 +342,10 @@ export default {
           const url = getDrugBankUrlByCAS(cas);
           window.open(url, '_blank');
         } else {
-          alert('未找到 DrugBank ID 或 CAS 号');
+          this.notifyUser(this.messages.drugbankNotFound, 'warning');
         }
       } catch (e) {
-        alert('获取 DrugBank 信息失败');
+        this.notifyUser(this.messages.drugbankFail, 'error');
       } finally {
         this.loading = false;
       }
@@ -324,18 +359,19 @@ export default {
       if (!this.smilesValue) return;
       this.loading = true;
       try {
-        const { cid, wikipediaUrl } = await getWikipediaUrlBySmiles(this.smilesValue);
+        const cid = await this.ensureCID();
         if (!cid) {
-          this.notifyCompoundNotFound();
+          this.notifyUser(this.messages.compoundNotFound, 'warning');
           return;
         }
+        const { wikipediaUrl } = await getWikipediaUrlByCID(cid);
         if (wikipediaUrl) {
           window.open(wikipediaUrl, '_blank');
         } else {
-          alert('未找到 Wikipedia 链接');
+          this.notifyUser(this.messages.wikipediaNotFound, 'warning');
         }
       } catch (e) {
-        alert('获取 Wikipedia 链接失败');
+        this.notifyUser(this.messages.wikipediaFail, 'error');
       } finally {
         this.loading = false;
       }
