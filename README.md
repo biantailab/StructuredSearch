@@ -38,6 +38,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - Get:
     - CAS
     - (IUPAC)Name
+        - 当pubchem数据库中存在该化合物则直接获取
+        - 当pubchem数据库中不存在该化合物则通过marvinjs的命名服务获取
     - Molecular Formula (分子式)
 - 3D可视化
     - 可与结构式，smiles进行实时更新

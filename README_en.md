@@ -39,6 +39,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - Get:
     - CAS
     - IUPACName
+        - If the compound exists in the PubChem database, it is acquire directly
+        - If the compound does not exist in the PubChem database, it is obtained through MarvinJS's naming service
     - Molecular Formula
 - 3D visualization
     - supports real-time updates with mol and smiles
