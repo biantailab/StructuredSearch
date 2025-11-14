@@ -19,7 +19,7 @@
           class="github-stars-link"
         >
           <img
-            src="https://img.shields.io/github/stars/biantailab/StructuredSearch"
+            src="https://img.shields.io/github/stars/biantailab/StructuredSearch.svg?style=social"
             alt="GitHub stars"
             class="github-stars-img"
           />
