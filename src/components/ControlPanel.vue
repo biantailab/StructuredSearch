@@ -39,6 +39,7 @@
           <option value="cas">CAS</option>
           <option value="iupac" title="IUPACName">Name</option>
           <option value="formula" title="Molecular Formula">Formula</option>
+          <option value="link" title="Compound Link">Link</option>
         </select>
         <button @click="handle3DView">3D</button>
         <button @click="handleHNMR">HNMR</button>
@@ -221,10 +222,25 @@ export default {
       this.smilesValue = '';
     },
 
-    handleCopy() {
-      if (this.smilesValue) {
-        navigator.clipboard.writeText(this.smilesValue);
+    handleCopy(type = 'smiles') {
+      if (!this.smilesValue) return;
+      
+      let textToCopy = '';
+      if (type === 'smiles') {
+        textToCopy = this.smilesValue;
+      } else if (type === 'link') {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('smiles', this.smilesValue);
+        textToCopy = currentUrl.toString();
       }
+      
+      navigator.clipboard.writeText(textToCopy).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    },
+    
+    handleCopyClick(event) {
+      event.stopPropagation();
     },
 
     async ensureCID() {
@@ -401,7 +417,10 @@ export default {
     handleGetSelect(event) {
       const value = event.target.value;
       if (!this.smilesValue || !value) return;
-      if (value === 'cas' || value === 'iupac' || value === 'formula') {
+      
+      if (value === 'link') {
+        this.handleCopy('link');
+      } else if (value === 'cas' || value === 'iupac' || value === 'formula') {
         this.handleGet(value);
       }
       event.target.value = '';

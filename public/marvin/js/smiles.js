@@ -77,6 +77,41 @@ let PARENT_FRAME_ORIGIN = null; // 用于存储父窗口的源
                 marvin.sketcherInstance = new marvin.Sketch("sketch");
                 marvin.sketcherInstance.setServices(getDefaultServices());
 
+                // Load initial SMILES from URL if provided
+                if (window.initialSmiles) {
+                    console.log("Attempting to load SMILES from URL:", window.initialSmiles);
+                    marvin.sketcherInstance.importStructure("smiles", window.initialSmiles)
+                        .then(() => {
+                            console.log("SMILES successfully loaded into editor:", window.initialSmiles);
+                            // Force a redraw of the canvas
+                            if (marvin.sketcherInstance && marvin.sketcherInstance.editor) {
+                                marvin.sketcherInstance.editor.repaint();
+                            }
+                            
+                            if (PARENT_FRAME_ORIGIN) {
+                                window.parent.postMessage({ 
+                                    type: 'smilesChangedInSketcher', 
+                                    value: window.initialSmiles 
+                                }, PARENT_FRAME_ORIGIN);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error loading initial SMILES:", error);
+                            // Try to get more detailed error information
+                            if (error && error.message) {
+                                console.error("Error details:", error.message);
+                            }
+                            // Try to export the current structure to see what's in the editor
+                            if (marvin.sketcherInstance) {
+                                marvin.sketcherInstance.exportStructure("smiles")
+                                    .then(smiles => console.log("Current editor SMILES:", smiles))
+                                    .catch(e => console.error("Could not export current structure:", e));
+                            }
+                        });
+                } else {
+                    console.log("No initial SMILES found in URL");
+                }
+
                 // Add event listener for structure changes
                 marvin.sketcherInstance.on('molchange', function() {
                     if (!PARENT_FRAME_ORIGIN) {
