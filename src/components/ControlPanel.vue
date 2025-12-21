@@ -29,8 +29,8 @@
         <select @change="loadExample" class="example-select">
           <option value="">Example:</option>
           <option value="C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1">Benzyl titanium</option>
-          <option value="O=C(O)C[C@H](CC(C)C)CN">Pregabalin</option>
-          <option value="CNCCC(C1=CC=CC=C1)OC2=CC=C(C=C2)C(F)(F)F">Fluoxetine</option>
+          <option value="COC1C=CC2C(=C([C@@H](O)[C@H]3N4C[C@H](C=C)C(CC4)C3)C=CN=2)C=1"> Quinine</option>
+          <option value="CCN1C=C(C(=O)C2=CC(=C(C=C21)N3CCNCC3)F)C(=O)O">Norfloxacin</option>
         </select>
         <button @click="handleClear">Clear</button>
         <button @click="handleCopy">Copy</button>
@@ -222,21 +222,52 @@ export default {
       this.smilesValue = '';
     },
 
-    handleCopy(type = 'smiles') {
+    async handleCopy(type = 'smiles') {
       if (!this.smilesValue) return;
       
-      let textToCopy = '';
-      if (type === 'smiles') {
-        textToCopy = this.smilesValue;
-      } else if (type === 'link') {
+      let textToCopy = this.smilesValue;
+      
+      if (type === 'link') {
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('smiles', this.smilesValue);
-        textToCopy = currentUrl.toString();
+        const longUrl = currentUrl.toString();
+        
+        try {
+          const response = await fetch('https://s.agungxenos.eu.org/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: longUrl })
+          });
+          
+          console.log('Short URL response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Short URL response data:', data);
+            if (data.success && data.shortUrl) {
+              textToCopy = data.shortUrl;
+              console.log('Using short URL:', textToCopy);
+            } else {
+              console.log('Short URL not found in response, using original URL');
+              textToCopy = longUrl;
+            }
+          } else {
+            console.log('Short URL service failed, using original URL');
+            textToCopy = longUrl;
+          }
+        } catch (error) {
+          console.error('Error creating short URL:', error);
+          textToCopy = longUrl;
+        }
       }
       
-      navigator.clipboard.writeText(textToCopy).catch(err => {
-        console.error('Failed to copy:', err);
-      });
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+      } catch (error) {
+        console.error('Failed to copy:', error);
+      }
     },
     
     handleCopyClick(event) {

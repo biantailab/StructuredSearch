@@ -32,8 +32,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - 支持smiles通过URL传入 https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
 - Example:
     - Benzyl titanium (苄钛)
-    - Pregabalin (普瑞巴林)
-    - Fluoxetine (氟西汀)
+    - Quinine (奎宁)
+    - Norfloxacin (诺氟沙星)
 - Clear
 - Copy
 - Get:
@@ -42,7 +42,7 @@ Powered by [Chemaxon](https://chemaxon.com)
         - 当pubchem数据库中存在该化合物则直接获取
         - 当pubchem数据库中不存在该化合物则通过marvinjs的命名服务获取
     - Molecular Formula (分子式)
-    - Compound Link https://structuredsearch.pages.dev/?smiles=C1%3DCC%3DCC%3DC1
+    - Compound Link
 - 3D可视化
     - 可与结构式，smiles进行实时更新
     - 种类
