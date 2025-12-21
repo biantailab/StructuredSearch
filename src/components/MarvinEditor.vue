@@ -1,7 +1,7 @@
 <template>
   <div class="control-panel">
     <iframe id="marvinFrame"
-    src="marvin/editorws.html"
+    :src="marvinUrl"
     class="marvin-frame"
     allow="clipboard-read; clipboard-write"
     @load="handleIframeLoad">
@@ -12,6 +12,19 @@
 <script>
 export default {
   name: 'MarvinEditor',
+  computed: {
+    marvinUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const smiles = urlParams.get('smiles');
+      
+      let marvinUrl = 'marvin/editorws.html';
+      if (smiles) {
+        marvinUrl += `?smiles=${encodeURIComponent(smiles)}`;
+      }
+      
+      return marvinUrl;
+    }
+  },
   methods: {
     handleIframeLoad() {
       // 通知父组件 iframe 已加载

@@ -8,6 +8,45 @@
     <link type="text/css" rel="stylesheet" href="gui/css/editor.min.css" media="screen" />
     <script src="gui/lib/promise-1.0.0.min.js"></script>
     <script src="js/webservices.js"></script>
+    <script>
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            try {
+                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+                var results = regex.exec(location.search);
+                var result = results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+                console.log('URL parameter', name, '=', result);
+                return result;
+            } catch (e) {
+                console.error('Error getting URL parameter:', e);
+                return '';
+            }
+        }
+
+        // Store the SMILES parameter from URL
+        window.initialSmiles = getUrlParameter('smiles');
+        console.log('Initial SMILES from URL:', window.initialSmiles);
+        
+        // Initialize marvin object
+        window.marvin = window.marvin || {};
+        
+        // Add onReady function to handle initialization
+        marvin.onReady = function(callback) {
+            if (marvin.sketcherInstance) {
+                callback();
+            } else {
+                var checkExist = setInterval(function() {
+                    if (marvin.sketcherInstance) {
+                        clearInterval(checkExist);
+                        callback();
+                    }
+                }, 100);
+            }
+        };
+        
+        console.log('Marvin global object initialized:', window.marvin);
+    </script>
     <script src="gui/gui.nocache.js"></script>
     <script src="js/smiles.js"></script>
 </head>

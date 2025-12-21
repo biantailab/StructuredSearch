@@ -30,6 +30,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## Functionality
 
 - Real-time conversion of smiles and mol
+- Supports passing smiles via URL https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
 - Example:
     - Benzyl titanium
     - Pregabalin
@@ -42,6 +43,7 @@ Powered by [Chemaxon](https://chemaxon.com)
         - If the compound exists in the PubChem database, it is acquire directly
         - If the compound does not exist in the PubChem database, it is obtained through MarvinJS's naming service
     - Molecular Formula
+    - Compound Link https://structuredsearch.pages.dev/?smiles=C1%3DCC%3DCC%3DC1
 - 3D visualization
     - supports real-time updates with mol and smiles
     - types
