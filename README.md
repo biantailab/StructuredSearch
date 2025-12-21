@@ -32,8 +32,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - 支持smiles通过URL传入 https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
 - Example:
     - Benzyl titanium (苄钛)
-    - Pregabalin (普瑞巴林)
-    - Fluoxetine (氟西汀)
+    - Quinine (奎宁)
+    - Norfloxacin (诺氟沙星)
 - Clear
 - Copy
 - Get:

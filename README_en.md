@@ -33,8 +33,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - Supports passing smiles via URL https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
 - Example:
     - Benzyl titanium
-    - Pregabalin
-    - Fluoxetine
+    - Quinine
+    - Norfloxacin
 - Clear smiles
 - Copy smiles
 - Get:
