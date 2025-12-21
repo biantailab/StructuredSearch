@@ -43,7 +43,7 @@ Powered by [Chemaxon](https://chemaxon.com)
         - If the compound exists in the PubChem database, it is acquire directly
         - If the compound does not exist in the PubChem database, it is obtained through MarvinJS's naming service
     - Molecular Formula
-    - Compound Link https://structuredsearch.pages.dev/?smiles=C1%3DCC%3DCC%3DC1
+    - Compound Link
 - 3D visualization
     - supports real-time updates with mol and smiles
     - types
