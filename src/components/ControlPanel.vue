@@ -67,8 +67,9 @@ import {
 import { 
   getDrugBankInfoBySmiles,
   getDrugBankFuzzySearchUrl,
-   getDrugBankUrlByCAS 
+  getDrugBankUrlByCAS 
 } from '@/utils/drugbank';
+import { generateSmilesLink } from '@/utils/link';
 
 export default {
   name: 'ControlPanel',
@@ -222,51 +223,34 @@ export default {
       this.smilesValue = '';
     },
 
+    showNotification(message, type = 'info') {
+      alert(message);
+    },
+
     async handleCopy(type = 'smiles') {
       if (!this.smilesValue) return;
       
       let textToCopy = this.smilesValue;
       
-      if (type === 'link') {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('smiles', this.smilesValue);
-        const longUrl = currentUrl.toString();
-        
-        try {
-          const response = await fetch('https://s.agungxenos.eu.org/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: longUrl })
-          });
-          
-          console.log('Short URL response status:', response.status);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Short URL response data:', data);
-            if (data.success && data.shortUrl) {
-              textToCopy = data.shortUrl;
-              console.log('Using short URL:', textToCopy);
-            } else {
-              console.log('Short URL not found in response, using original URL');
-              textToCopy = longUrl;
-            }
-          } else {
-            console.log('Short URL service failed, using original URL');
-            textToCopy = longUrl;
-          }
-        } catch (error) {
-          console.error('Error creating short URL:', error);
-          textToCopy = longUrl;
-        }
-      }
-      
       try {
-        await navigator.clipboard.writeText(textToCopy);
+        if (type === 'link') {
+          try {
+            textToCopy = await generateSmilesLink(this.smilesValue);
+          } catch (apiError) {
+            console.error('短链接生成服务不可用:', apiError);
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('smiles', this.smilesValue);
+            textToCopy = currentUrl.toString();
+            alert('短链接生成服务暂时不可用，已复制原链接');
+          }
+          await navigator.clipboard.writeText(textToCopy);
+          alert('短链接已复制到剪贴板');
+        } else {
+          await navigator.clipboard.writeText(textToCopy);
+        }
       } catch (error) {
-        console.error('Failed to copy:', error);
+        console.error('复制失败:', error);
+        alert('复制失败，请手动复制');
       }
     },
     
