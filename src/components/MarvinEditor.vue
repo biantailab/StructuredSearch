@@ -43,7 +43,10 @@ export default {
 .control-panel {
   margin-bottom: 4px;
   padding: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -32,20 +32,20 @@
           <option value="COC1C=CC2C(=C([C@@H](O)[C@H]3N4C[C@H](C=C)C(CC4)C3)C=CN=2)C=1"> Quinine</option>
           <option value="CCN1C=C(C(=O)C2=CC(=C(C=C21)N3CCNCC3)F)C(=O)O">Norfloxacin</option>
         </select>
-        <button @click="handleClear">Clear</button>
-        <button @click="handleCopy">Copy</button>
-        <select @change="handleGetSelect" class="get-select">
+        <button @click="handleClear" :disabled="!smilesValue">Clear</button>
+        <button @click="handleCopy" :disabled="!smilesValue">Copy</button>
+        <select @change="handleGetSelect" class="get-select" :disabled="!smilesValue">
           <option value="">Get:</option>
           <option value="cas">CAS</option>
           <option value="iupac" title="IUPACName">Name</option>
           <option value="formula" title="Molecular Formula">Formula</option>
           <option value="link" title="Compound Link">Link</option>
         </select>
-        <button @click="handle3DView">3D</button>
-        <button @click="handleHNMR">HNMR</button>
-        <button @click="handlePubChem">PubChem</button>
-        <button @click="handleGetWikipedia">Wikipedia</button>
-        <select @change="handleDrugBankSelect" class="drugbank-select">
+        <button @click="handle3DView" :disabled="!smilesValue">3D</button>
+        <button @click="handleHNMR" :disabled="!smilesValue">HNMR</button>
+        <button @click="handlePubChem" :disabled="!smilesValue">PubChem</button>
+        <button @click="handleGetWikipedia" :disabled="!smilesValue">Wikipedia</button>
+        <select @change="handleDrugBankSelect" class="drugbank-select" :disabled="!smilesValue">
           <option value="">DrugBank:</option>
           <option value="exact">exact</option>
           <option value="fuzzy">fuzzy</option>
@@ -454,7 +454,10 @@ export default {
 .control-panel {
   margin-bottom: 4px;
   padding: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -501,11 +504,17 @@ export default {
   max-width: 676.263px;
 }
 
+/* Button and select styles */
 .button-group button,
 .button-group select {
-  cursor: pointer;
   --uno: "border-0 border-b-2 border-transparent rounded-none px-2 py-1 border-solid";
-  --uno: "bg-transparent hover:bg-ma-bg transition-all outline-none text-ma-text";
+  --uno: "bg-transparent transition-all outline-none";
+}
+
+/* Hover effects */
+.button-group button:not(:disabled):hover,
+.button-group select:not(:disabled):hover {
+  --uno: "hover:bg-ma-bg";
 }
 
 .loading-overlay {
