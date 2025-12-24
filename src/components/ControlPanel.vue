@@ -234,17 +234,23 @@ export default {
       
       try {
         if (type === 'link') {
+          const originalUrl = new URL(window.location.href);
+          originalUrl.searchParams.set('smiles', this.smilesValue);
+          const longUrl = originalUrl.toString();
+          
           try {
             textToCopy = await generateSmilesLink(this.smilesValue);
+            if (textToCopy === longUrl) {
+              throw new Error('Short URL service returned original URL');
+            }
+            await navigator.clipboard.writeText(textToCopy);
+            alert('短链接已复制到剪贴板');
           } catch (apiError) {
             console.error('短链接生成服务不可用:', apiError);
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('smiles', this.smilesValue);
-            textToCopy = currentUrl.toString();
-            alert('短链接生成服务暂时不可用，已复制原链接');
+            textToCopy = longUrl;
+            await navigator.clipboard.writeText(textToCopy);
+            alert('短链接生成服务暂时不可用，已复制原链接到剪贴板');
           }
-          await navigator.clipboard.writeText(textToCopy);
-          alert('短链接已复制到剪贴板');
         } else {
           await navigator.clipboard.writeText(textToCopy);
         }
@@ -474,8 +480,6 @@ export default {
   flex: 1;
   max-width: 100%;
   box-sizing: border-box;
-  --uno: "border border-gray-200 rounded px-2 py-1 border-solid";
-  --uno: "transition-all hover:border-ma hover:bg-ma-bg focus:border-ma outline-none text-ma-text";
 }
 
 .github-stars-link {
@@ -501,7 +505,7 @@ export default {
 .button-group select {
   cursor: pointer;
   --uno: "border-0 border-b-2 border-transparent rounded-none px-2 py-1 border-solid";
-  --uno: "bg-transparent hover:bg-ma-bg hover:border-ma transition-all outline-none text-ma-text";
+  --uno: "bg-transparent hover:bg-ma-bg transition-all outline-none text-ma-text";
 }
 
 .loading-overlay {
