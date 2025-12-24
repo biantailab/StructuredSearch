@@ -466,7 +466,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 628px;
+  max-width: 676.263px;
   gap: 4px;
 }
 
@@ -474,6 +474,8 @@ export default {
   flex: 1;
   max-width: 100%;
   box-sizing: border-box;
+  --uno: "border border-gray-200 rounded px-2 py-1 border-solid";
+  --uno: "transition-all hover:border-ma hover:bg-ma-bg focus:border-ma outline-none text-ma-text";
 }
 
 .github-stars-link {
@@ -491,11 +493,15 @@ export default {
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 676.263px;
 }
 
 .button-group button,
 .button-group select {
   cursor: pointer;
+  --uno: "border-0 border-b-2 border-transparent rounded-none px-2 py-1 border-solid";
+  --uno: "bg-transparent hover:bg-ma-bg hover:border-ma transition-all outline-none text-ma-text";
 }
 
 .loading-overlay {
