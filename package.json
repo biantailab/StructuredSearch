@@ -14,9 +14,11 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.27.1",
+    "@unocss/transformer-directives": "^66.5.10",
     "@vitejs/plugin-vue": "^5.2.4",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.7.1",
+    "unocss": "^66.5.10",
     "vite": "^6.4.1"
   }
 }

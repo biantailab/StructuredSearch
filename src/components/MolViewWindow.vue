@@ -372,10 +372,12 @@ export default {
 .mode-selector button {
   font-size: 12px;
   cursor: pointer;
+  --uno: "border-0 border-b-2 border-transparent rounded-none px-2 py-1 border-solid";
+  --uno: "bg-transparent hover:bg-ma-h transition-all outline-none text-ma-text";
 }
 
 .mode-selector button.active {
-  background: #e0e0e0;
+  --uno: "text-ma bg-ma-bg border-ma border-b-2 border-solid";
 }
 
 .view-content {
