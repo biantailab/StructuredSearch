@@ -9,5 +9,14 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  server: {
+    proxy: {
+      '/api/molscribe': {
+        target: 'https://yujieq-molscribe.hf.space',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/molscribe/, '')
+      }
+    }
   }
 })

@@ -15,6 +15,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [nmrdb](https://www.nmrdb.org)
 - [molview](https://molview.org)
+- [molScribe](https://huggingface.co/spaces/yujieq/MolScribe)
 
 > [!tip]
 > DrugBank exact和Wikipedia跳转链接来自PubChem JSON
@@ -34,6 +35,7 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Benzyl titanium (苄钛)
     - Quinine (奎宁)
     - Norfloxacin (诺氟沙星)
+- Image将分子图像转换为smiles
 - Clear
 - Copy
 - Get:

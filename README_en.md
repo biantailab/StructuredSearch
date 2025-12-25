@@ -16,6 +16,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [nmrdb](https://www.nmrdb.org)
 - [molview](https://molview.org)
+- [molScribe](https://huggingface.co/spaces/yujieq/MolScribe)
 
 > [!tip]
 > DrugBank exact and Wikipedia jump links from PubChem JSON
@@ -35,6 +36,7 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Benzyl titanium
     - Quinine
     - Norfloxacin
+- Image molecular image to smiles
 - Clear smiles
 - Copy smiles
 - Get:
