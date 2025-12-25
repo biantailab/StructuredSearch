@@ -32,6 +32,16 @@
           <option value="COC1C=CC2C(=C([C@@H](O)[C@H]3N4C[C@H](C=C)C(CC4)C3)C=CN=2)C=1"> Quinine</option>
           <option value="CCN1C=C(C(=O)C2=CC(=C(C=C21)N3CCNCC3)F)C(=O)O">Norfloxacin</option>
         </select>
+        <button @click="handleImageUpload" title="Upload structure image">
+          <input 
+            type="file" 
+            ref="fileInput" 
+            accept="image/*" 
+            @change="handleFileSelect" 
+            style="display: none"
+          >
+          <span>Image</span>
+        </button>
         <button @click="handleClear" :disabled="!smilesValue">Clear</button>
         <button @click="handleCopy" :disabled="!smilesValue">Copy</button>
         <select @change="handleGetSelect" class="get-select" :disabled="!smilesValue">
@@ -70,6 +80,7 @@ import {
   getDrugBankUrlByCAS 
 } from '@/utils/drugbank';
 import { generateSmilesLink } from '@/utils/link';
+import { imageToSmiles } from '../utils/ocrService';
 
 export default {
   name: 'ControlPanel',
@@ -79,6 +90,7 @@ export default {
       iframeOrigin: null,
       loading: false,
       drugBankMode: 'exact',
+      fileInput: null,
       messages: {
         compoundNotFound: '未找到对应的化合物',
         copySuccess: (label, value) => `${label}: ${value}\n已复制到剪贴板`,
@@ -446,6 +458,46 @@ export default {
       }
       event.target.value = '';
     },
+    
+    handleImageUpload() {
+      this.$refs.fileInput.click();
+    },
+    
+    async handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      this.loading = true;
+      
+      try {
+        console.log('Processing file:', file.name);
+        const smiles = await imageToSmiles(file);
+        console.log('Received SMILES:', smiles);
+        
+        if (!smiles) {
+          throw new Error('无法识别该图片结构');
+        }
+
+        this.smilesValue = smiles;
+        this.sendSmilesToMarvin(smiles);
+      } catch (error) {
+        console.error('图片处理错误:', error);
+        
+        let errorMessage = error.message;
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = this.messages.fetchFail;
+        } else if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+          errorMessage = this.messages.fetchFail;
+        } else if (!error.message.startsWith('处理图片失败:')) {
+          errorMessage = `处理图片失败: ${error.message || '未知错误'}`;
+        }
+        
+        this.showNotification(errorMessage, 'error');
+      } finally {
+        this.loading = false;
+        event.target.value = '';
+      }
+    },
   }
 }
 </script>
@@ -475,7 +527,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 676.263px;
+  max-width: 734px;
   gap: 4px;
 }
 
@@ -501,7 +553,7 @@ export default {
   gap: 4px;
   flex-wrap: wrap;
   width: 100%;
-  max-width: 676.263px;
+  max-width: 734px;
 }
 
 /* Button and select styles */
@@ -530,7 +582,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 655px) {
+@media screen and (max-width: 759px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
@@ -538,7 +590,7 @@ export default {
   
   .button-group button {
     flex: 1;
-    min-width: 90px;
+    min-width: 100px;
   }
 }
 </style> 
