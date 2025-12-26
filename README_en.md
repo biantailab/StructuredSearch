@@ -16,7 +16,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [nmrdb](https://www.nmrdb.org)
 - [molview](https://molview.org)
-- [molScribe](https://huggingface.co/spaces/yujieq/MolScribe)
+- [molscribe](https://huggingface.co/spaces/yujieq/MolScribe)
+- [cloudflare](https://cloudflare.com)
 
 > [!tip]
 > DrugBank exact and Wikipedia jump links from PubChem JSON
