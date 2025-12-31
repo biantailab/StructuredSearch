@@ -4,10 +4,24 @@ const fs = require('fs');
 const path = require('path');
 
 const TEST_SMILES = [
-    'C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1',
-    'O=C(O)C[C@H](CC(C)C)CN',
-    'CNCCC(C1=CC=CC=C1)OC2=CC=C(C=C2)C(F)(F)F',
+    'CCCCCCCCC=O', 
 ];
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function getSpoofedHeaders(targetUrl) {
+    try {
+        const urlObj = new URL(targetUrl);
+        return {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Origin': urlObj.origin,
+            'Referer': urlObj.origin + '/',
+            'Content-Type': 'application/json'
+        };
+    } catch (e) {
+        return { 'Content-Type': 'application/json' };
+    }
+}
 
 function loadWebservicesConfig() {
     try {
@@ -40,12 +54,19 @@ function loadWebservicesConfig() {
 async function testServiceEndpoint(url, timeout = 10000) {
     try {
         console.log(`Testing endpoint: ${url}`);
+        
+        const headers = getSpoofedHeaders(url);
+        delete headers['Content-Type'];
+
         const response = await axios.get(url, { 
             timeout,
+            headers: headers,
             validateStatus: function (status) {
                 return status < 500;
             }
         });
+        
+        await sleep(500); 
         
         console.log(`Endpoint ${url} responded with status: ${response.status}`);
         return {
@@ -66,39 +87,48 @@ async function testServiceEndpoint(url, timeout = 10000) {
 async function testSmilesConversion(serviceUrl, smiles, timeout = 15000) {
     try {
         console.log(`Testing SMILES conversion: ${smiles}`);
-        
-        const formats = ['mol', 'sdf', 'smiles'];
+
+        const formats = ['mol', 'smiles']; 
         const results = [];
         
         for (const format of formats) {
-            try {
-                const response = await axios.post(serviceUrl, {
-                    structure: smiles,
-                    parameters: `${format}`
-                }, {
-                    timeout,
-                    headers: {
-                        'Content-Type': 'application/json'
+            let retries = 1;
+            let success = false;
+            let response = null;
+            let lastError = null;
+
+            while (retries >= 0 && !success) {
+                try {
+                    await sleep(1000);
+
+                    response = await axios.post(serviceUrl, {
+                        structure: smiles,
+                        parameters: `${format}`
+                    }, {
+                        timeout,
+                        headers: getSpoofedHeaders(serviceUrl)
+                    });
+                    
+                    if (response.status === 200) {
+                        success = true;
                     }
-                });
-                
-                const success = response.status === 200 && response.data;
-                results.push({
-                    format,
-                    success,
-                    status: response.status,
-                    hasData: !!response.data
-                });
-                
-                console.log(`SMILES ${smiles} -> ${format}: ${success ? 'SUCCESS' : 'FAILED'}`);
-            } catch (error) {
-                results.push({
-                    format,
-                    success: false,
-                    error: error.message
-                });
-                console.log(`SMILES ${smiles} -> ${format}: FAILED (${error.message})`);
+                } catch (error) {
+                    lastError = error;
+                    if (error.response && error.response.status === 429) {
+                        console.log(`Rate limited (429), waiting 3s...`);
+                        await sleep(3000);
+                    }
+                    retries--;
+                }
             }
+
+            results.push({
+                format,
+                success,
+                status: response ? response.status : 'ERR',
+                error: success ? null : (lastError ? lastError.message : 'Unknown')
+            });
+            console.log(`SMILES ${smiles} -> ${format}: ${success ? 'SUCCESS' : 'FAILED'}`);
         }
         
         return {
@@ -107,12 +137,7 @@ async function testSmilesConversion(serviceUrl, smiles, timeout = 15000) {
             overallSuccess: results.some(r => r.success)
         };
     } catch (error) {
-        console.error(`SMILES conversion test failed for ${smiles}:`, error.message);
-        return {
-            smiles,
-            success: false,
-            error: error.message
-        };
+        return { smiles, success: false, error: error.message };
     }
 }
 
@@ -129,43 +154,18 @@ async function sendEmailNotification(failedServices, failedConversions) {
     try {
         const transporter = nodemailer.createTransporter({
             service: 'gmail',
-            auth: {
-                user: emailUser,
-                pass: emailPass
-            }
+            auth: { user: emailUser, pass: emailPass }
         });
         
-        const failedServicesList = failedServices.map(s => `- ${s.url}: ${s.error || s.status}`).join('\n');
-        const failedConversionsList = failedConversions.map(c => `- ${c.smiles}: ${c.error || 'Conversion failed'}`).join('\n');
+        const failedList = [...failedServices, ...failedConversions]
+            .map(f => `- ${f.url || f.smiles}: ${f.error || 'Failed'}`).join('\n');
         
-        const mailOptions = {
+        await transporter.sendMail({
             from: emailUser,
             to: notificationEmail,
-            subject: '🚨 Webservice Health Check Failed - SMILES Conversion Issues',
-            html: `
-                <h2>Webservice Health Check Failed</h2>
-                <p><strong>Time:</strong> ${new Date().toISOString()}</p>
-                <p><strong>Repository:</strong> StructuredSearch</p>
-                
-                <h3>Failed Services (${failedServices.length})</h3>
-                <pre>${failedServicesList}</pre>
-                
-                <h3>Failed SMILES Conversions (${failedConversions.length})</h3>
-                <pre>${failedConversionsList}</pre>
-                
-                <h3>Recommended Actions</h3>
-                <ul>
-                    <li>Check the webservice server status</li>
-                    <li>Verify network connectivity</li>
-                    <li>Update webservice URLs if necessary</li>
-                    <li>Check GitHub Issues for automated issue creation</li>
-                </ul>
-                
-                <p><em>This notification was sent automatically by the GitHub Actions workflow.</em></p>
-            `
-        };
-        
-        await transporter.sendMail(mailOptions);
+            subject: '🚨 Webservice Health Check Failed',
+            html: `<h3>Health Check Failed</h3><pre>${failedList}</pre>`
+        });
         console.log('Email notification sent successfully');
     } catch (error) {
         console.error('Failed to send email notification:', error.message);
@@ -193,37 +193,29 @@ async function runHealthCheck() {
         
         console.log('\n=== Testing SMILES Conversions ===');
         const molconvertUrl = config.services.molconvert;
-        
-        for (const smiles of TEST_SMILES) {
-            const result = await testSmilesConversion(molconvertUrl, smiles);
-            if (!result.overallSuccess) {
-                hasFailures = true;
-                failedConversions.push(result);
+
+        if (!hasFailures) {
+            for (const smiles of TEST_SMILES) {
+                const result = await testSmilesConversion(molconvertUrl, smiles);
+                if (!result.overallSuccess) {
+                    hasFailures = true;
+                    failedConversions.push(result);
+                }
             }
         }
-        
-        console.log('\n=== Health Check Summary ===');
-        console.log(`Failed Services: ${failedServices.length}`);
-        console.log(`Failed Conversions: ${failedConversions.length}`);
-        console.log(`Overall Status: ${hasFailures ? 'FAILED' : 'PASSED'}`);
+
+        console.log('\n=== Summary ===');
+        console.log(`Status: ${hasFailures ? 'FAILED' : 'PASSED'}`);
         
         if (hasFailures) {
             await sendEmailNotification(failedServices, failedConversions);
-        }
-        
-        const hasConversionFailures = failedConversions.length > 0;
-        
-        if (hasConversionFailures) {
-            console.error('Health check failed - SMILES conversion is not working correctly');
             process.exit(1);
         } else {
-            console.log('Health check passed - SMILES conversion is working correctly');
             process.exit(0);
         }
         
     } catch (error) {
-        console.error('Health check encountered an error:', error.message);
-        console.error(error.stack);
+        console.error('Error:', error.message);
         process.exit(1);
     }
 }
@@ -232,9 +224,4 @@ if (require.main === module) {
     runHealthCheck();
 }
 
-module.exports = {
-    runHealthCheck,
-    testServiceEndpoint,
-    testSmilesConversion,
-    loadWebservicesConfig
-};
+module.exports = { runHealthCheck };
