@@ -28,6 +28,7 @@ export default {
   min-height: 0;
 }
 .control-panel {
+  padding: 2px;
   border: 1px solid #e0e0e0;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
