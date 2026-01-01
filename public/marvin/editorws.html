@@ -22,12 +22,8 @@
         // Function to get URL parameters
         function getUrlParameter(name) {
             try {
-                name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-                var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-                var results = regex.exec(location.search);
-                var result = results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-                console.log('URL parameter', name, '=', result);
-                return result;
+                var params = new URLSearchParams(window.location.search);
+                return params.get(name) || '';
             } catch (e) {
                 console.error('Error getting URL parameter:', e);
                 return '';
@@ -36,7 +32,6 @@
 
         // Store the SMILES parameter from URL
         window.initialSmiles = getUrlParameter('smiles');
-        console.log('Initial SMILES from URL:', window.initialSmiles);
         
         // Initialize marvin object
         window.marvin = window.marvin || {};
@@ -55,7 +50,6 @@
             }
         };
         
-        console.log('Marvin global object initialized:', window.marvin);
     </script>
     <script src="js/smiles.js"></script>
 </head>
