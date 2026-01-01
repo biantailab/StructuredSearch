@@ -37,7 +37,9 @@ export default {
 <style scoped>
 .marvin-frame {
   width: 100%;
-  height: 90vh;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
   border: none;
 }
 .control-panel {
@@ -49,13 +51,14 @@ export default {
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 @media screen and (max-width: 759px) {
   .control-panel {
-    height: 75vh;
     margin-bottom: 0;
     padding: 2px;
   }
 }
-</style> 
+</style>

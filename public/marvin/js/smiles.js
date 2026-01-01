@@ -1,6 +1,10 @@
 let PARENT_FRAME_ORIGIN = null; // 用于存储父窗口的源
 
         window.addEventListener("message", function(event) {
+            if (event.source !== window.parent) {
+                return;
+            }
+
             // 安全性：在首次消息时存储父窗口的源
             // 后续消息应来自同一源
             if (!PARENT_FRAME_ORIGIN) {
@@ -17,7 +21,15 @@ let PARENT_FRAME_ORIGIN = null; // 用于存储父窗口的源
                 return; // 忽略来自其他源的消息
             }
 
-            const messageData = event.data; // event.data 已经是对象了，不需要 JSON.parse
+            let messageData = event.data;
+            if (typeof messageData === 'string') {
+                try {
+                    messageData = JSON.parse(messageData);
+                } catch (e) {
+                    console.warn('iframe: Failed to parse message data as JSON string:', messageData);
+                    return;
+                }
+            }
 
             if (messageData && messageData.type) {
                 marvin.onReady(function() { // 确保 sketcher 实例已准备好
@@ -73,7 +85,68 @@ let PARENT_FRAME_ORIGIN = null; // 用于存储父窗口的源
 
         // called when Marvin JS loaded
         function sketchOnLoad() {
-            if (marvin.Sketch.isSupported()) {
+            if (marvin.sketcherInstance && typeof marvin.sketcherInstance.importStructure === 'function') {
+                if (typeof marvin.sketcherInstance.setServices === 'function') {
+                    marvin.sketcherInstance.setServices(getDefaultServices());
+                }
+
+                // Load initial SMILES from URL if provided
+                if (window.initialSmiles) {
+                    console.log("Attempting to load SMILES from URL:", window.initialSmiles);
+                    marvin.sketcherInstance.importStructure("smiles", window.initialSmiles)
+                        .then(() => {
+                            console.log("SMILES successfully loaded into editor:", window.initialSmiles);
+                            // Force a redraw of the canvas
+                            if (marvin.sketcherInstance && typeof marvin.sketcherInstance.repaint === 'function') {
+                                marvin.sketcherInstance.repaint();
+                            } else if (marvin.sketcherInstance && marvin.sketcherInstance.editor) {
+                                marvin.sketcherInstance.editor.repaint();
+                            }
+                            
+                            if (PARENT_FRAME_ORIGIN) {
+                                window.parent.postMessage({ 
+                                    type: 'smilesChangedInSketcher', 
+                                    value: window.initialSmiles 
+                                }, PARENT_FRAME_ORIGIN);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error loading initial SMILES:", error);
+                            // Try to get more detailed error information
+                            if (error && error.message) {
+                                console.error("Error details:", error.message);
+                            }
+                            // Try to export the current structure to see what's in the editor
+                            if (marvin.sketcherInstance) {
+                                marvin.sketcherInstance.exportStructure("smiles")
+                                    .then(smiles => console.log("Current editor SMILES:", smiles))
+                                    .catch(e => console.error("Could not export current structure:", e));
+                            }
+                        });
+                } else {
+                    console.log("No initial SMILES found in URL");
+                }
+
+                // Add event listener for structure changes
+                if (typeof marvin.sketcherInstance.on === 'function') {
+                    marvin.sketcherInstance.on('molchange', function() {
+                        if (!PARENT_FRAME_ORIGIN) {
+                            console.warn("iframe (molchange): 父窗口源未知，无法发送 SMILES。");
+                            return;
+                        }
+                        if (marvin.sketcherInstance) {
+                            marvin.sketcherInstance.exportStructure("smiles").then(function(smiles) {
+                                // 将新的 SMILES 字符串发送回父窗口
+                                console.log("iframe (molchange): 发送 SMILES 到父窗口:", smiles);
+                                window.parent.postMessage({ type: 'smilesChangedInSketcher', value: smiles }, PARENT_FRAME_ORIGIN);
+                            }).catch(function(error) {
+                                console.error('iframe (molchange): 导出 SMILES 错误:', error);
+                            });
+                        }
+                    });
+                }
+
+            } else if (marvin.Sketch && typeof marvin.Sketch.isSupported === 'function' && marvin.Sketch.isSupported()) {
                 marvin.sketcherInstance = new marvin.Sketch("sketch");
                 marvin.sketcherInstance.setServices(getDefaultServices());
 
