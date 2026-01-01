@@ -7,11 +7,6 @@
       :smiles="currentSmiles"
       @close="handleClose3D"
     />
-    <div class="chemaxon-corner">
-      <a href="http://www.chemaxon.com/" target="_blank" rel="noopener">
-        <img src="/imgs/chemaxon.png" alt="Chemaxon" />
-      </a>
-    </div>
   </div>
 </template>
 
@@ -72,10 +67,16 @@ export default {
 </script>
 
 <style>
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
 }
 
 .logo-container {
