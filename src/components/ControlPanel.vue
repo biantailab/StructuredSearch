@@ -81,6 +81,7 @@ import {
 } from '@/utils/drugbank';
 import { generateSmilesLink } from '@/utils/link';
 import { imageToSmiles } from '../utils/ocrService';
+import { clearSketch, exportIupacName, importSmiles, onSmilesChange } from '@/utils/marvinBridge';
 
 export default {
   name: 'ControlPanel',
@@ -114,7 +115,15 @@ export default {
     }
   },
   mounted() {
-    this.setupMessageListener();
+    this._unsubscribeMarvinSmiles = onSmilesChange((smiles) => {
+      this.smilesValue = smiles;
+    });
+  },
+  beforeUnmount() {
+    if (this._unsubscribeMarvinSmiles) {
+      this._unsubscribeMarvinSmiles();
+      this._unsubscribeMarvinSmiles = null;
+    }
   },
   methods: {
     notifyUser(message, type = 'info') {
@@ -161,73 +170,23 @@ export default {
       this.sendSmilesToMarvin(value);
     },
 
-    setupMessageListener() {
-      window.addEventListener('message', (event) => {
-        const marvinIframe = document.getElementById('marvinFrame');
-        if (!marvinIframe || event.source !== marvinIframe.contentWindow) {
-          return;
-        }
-
-        // 处理来自 Marvin 编辑器的消息
-        if (event.data?.type === 'smilesChangedInSketcher') {
-          this.smilesValue = event.data.value;
-        } else if (event.data?.type === 'smilesImported') {
-          if (event.data.status === 'error') {
-            console.error('SMILES 导入失败:', event.data.error);
-          }
-        } else if (event.data?.type === 'iupacNameResult') {
-          if (this._iupacNameResolver) {
-            if (event.data.status === 'success') {
-              this._iupacNameResolver.resolve(event.data.value || null);
-            } else {
-              this._iupacNameResolver.resolve(null);
-            }
-            this._iupacNameResolver = null;
-          }
-        } else if (event.data?.type === 'sketchCleared') {
-          if (event.data.status === 'success') {
-            this.smilesValue = '';
-          }
-        }
-      });
-    },
-
     sendSmilesToMarvin(value) {
-      const marvinIframe = document.getElementById('marvinFrame');
-      if (marvinIframe?.contentWindow) {
-        marvinIframe.contentWindow.postMessage(
-          { type: 'smilesUpdate', value: value },
-          '*'
-        );
-      }
+      importSmiles(value);
     },
 
-    requestIUPACNameFromMarvin() {
-      return new Promise((resolve) => {
-        const marvinIframe = document.getElementById('marvinFrame');
-        if (!marvinIframe?.contentWindow) {
-          resolve(null);
-          return;
-        }
-        this._iupacNameResolver = { resolve };
-        marvinIframe.contentWindow.postMessage({ type: 'getIUPACName' }, '*');
-        setTimeout(() => {
-          if (this._iupacNameResolver) {
-            this._iupacNameResolver = null;
-            resolve(null);
-          }
-        }, 6000);
-      });
+    async requestIUPACNameFromMarvin() {
+      try {
+        return await Promise.race([
+          exportIupacName(),
+          new Promise((resolve) => setTimeout(() => resolve(null), 6000)),
+        ]);
+      } catch (_) {
+        return null;
+      }
     },
 
     handleClear() {
-      const marvinIframe = document.getElementById('marvinFrame');
-      if (marvinIframe?.contentWindow) {
-        marvinIframe.contentWindow.postMessage(
-          { type: 'clearSketch' },
-          '*'
-        );
-      }
+      clearSketch();
       const select = document.querySelector('.example-select');
       if (select) {
         select.value = '';
@@ -582,7 +541,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 759px) {
+@media screen and (max-width: 743px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
