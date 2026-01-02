@@ -72,10 +72,24 @@ export default {
 </script>
 
 <style>
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .logo-container {
@@ -101,8 +115,8 @@ export default {
 
 .chemaxon-corner {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 12px;
+  bottom: 8px;
   z-index: 9999;
   background: rgba(0,0,0,0.0);
   padding: 0;
@@ -110,12 +124,12 @@ export default {
 }
 
 .chemaxon-corner img {
-  height: 30px;
+  height: 20px;
 }
 
 @media (max-width: 655px) {
   .chemaxon-corner img {
-    height: 20px;
+    height: 16px;
   }
 }
 </style> 

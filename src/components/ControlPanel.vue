@@ -582,7 +582,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 759px) {
+@media screen and (max-width: 743px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
