@@ -59,6 +59,10 @@ Powered by [Chemaxon](https://chemaxon.com)
     - exact
     - fuzzy
 
+## Historical versions
+
+- Version based on external web services [Click to access](https://structuresearch.pages.dev)
+
 ## More
 
 - [KetcherSearch](https://github.com/biantailab/KetcherSearch) - Pure front-end implementation of smiles⇄mol based on Ketcher Searching for compound information from molecular structures

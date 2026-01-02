@@ -58,6 +58,10 @@ Powered by [Chemaxon](https://chemaxon.com)
     - exact (详细)
     - fuzzy (模糊)
 
+## 历史版本
+
+- 基于外部网络服务的版本 [点击访问](https://structuresearch.pages.dev)
+
 ## 更多
 
 - [KetcherSearch](https://github.com/biantailab/KetcherSearch) - 基于Ketcher的纯前端实现smiles⇄mol的从分子结构中搜索化合物信息
