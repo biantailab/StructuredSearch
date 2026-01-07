@@ -12,17 +12,19 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 依赖
 
-- [pubchem](https://pubchem.ncbi.nlm.nih.gov)
-- [nmrdb](https://www.nmrdb.org)
-- [molview](https://molview.org)
-- [molscribe](https://huggingface.co/spaces/yujieq/MolScribe)
-- [cloudflare](https://cloudflare.com)
+- [pubchem](https://pubchem.ncbi.nlm.nih.gov) - 数据源
+- [molview](https://molview.org) - 3D可视化
+- [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - 分子图像识别
+
+## 搜索目标
 
 > [!tip]
 > DrugBank exact和Wikipedia跳转链接来自PubChem JSON
 
-- [drugbank](https://go.drugbank.com)
+- [nmrdb](https://www.nmrdb.org)
+- [pubchem](https://pubchem.ncbi.nlm.nih.gov)
 - [wikipedia](https://en.wikipedia.org)
+- [drugbank](https://go.drugbank.com)
 
 ## 预览
 
