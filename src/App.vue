@@ -115,7 +115,7 @@ body {
 
 .chemaxon-corner {
   position: fixed;
-  right: 12px;
+  right: 35px;
   bottom: 8px;
   z-index: 9999;
   background: rgba(0,0,0,0.0);
