@@ -15,6 +15,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov) - 数据源
 - [molview](https://molview.org) - 3D可视化
 - [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - 分子图像识别
+- [cloudflare](https://cloudflare.com) - 短链服务
 
 ## 搜索目标
 

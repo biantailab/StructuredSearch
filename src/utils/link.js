@@ -6,7 +6,7 @@ export async function generateSmilesLink(smiles) {
   const longUrl = currentUrl.toString();
   
   try {
-    const response = await fetch('https://s.tibn4.de5.net/', {
+    const response = await fetch('https://s.agungxenos.eu.org/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
