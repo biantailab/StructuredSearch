@@ -406,12 +406,17 @@ export default {
       return this.handleGet('formula');
     },
 
-    handleGetSelect(event) {
+    async handleGetSelect(event) {
       const value = event.target.value;
       if (!this.smilesValue || !value) return;
       
       if (value === 'link') {
-        this.handleCopy('link');
+        this.loading = true;
+        try {
+          await this.handleCopy('link');
+        } finally {
+          this.loading = false;
+        }
       } else if (value === 'cas' || value === 'iupac' || value === 'formula') {
         this.handleGet(value);
       }
