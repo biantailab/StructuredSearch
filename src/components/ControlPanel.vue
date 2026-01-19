@@ -241,7 +241,12 @@ export default {
 
     async handleCopy(type = 'smiles') {
       if (!this.smilesValue) return;
-      
+
+      const shouldShowLoading = type === 'link';
+      if (shouldShowLoading) {
+        this.loading = true;
+      }
+  
       let textToCopy = this.smilesValue;
       
       try {
@@ -269,6 +274,10 @@ export default {
       } catch (error) {
         console.error('复制失败:', error);
         alert('复制失败，请手动复制');
+      } finally {
+        if (shouldShowLoading) {
+          this.loading = false;
+        }
       }
     },
     
