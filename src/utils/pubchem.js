@@ -30,6 +30,15 @@ export async function getCASByCID(cid) {
   return casNumber || null;
 }
 
+export async function getSynonymsByCID(cid) {
+  const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Synonyms 查询失败');
+  const data = await response.json();
+  const synonyms = data.InformationList?.Information?.[0]?.Synonym || [];
+  return Array.from(new Set((synonyms || []).map((s) => (s || '').trim()).filter(Boolean)));
+}
+
 export async function getPubChemData(cid) {
   const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
   const response = await fetch(url);
@@ -59,42 +68,6 @@ export async function getMolecularFormulaByCID(cid) {
   return formulaData.PropertyTable?.Properties?.[0]?.MolecularFormula || null;
 }
 
-export function findWikipediaLink(sections, recordTitle, synonyms = []) {
-  for (const section of sections || []) {
-    if (section.TOCHeading === 'Wikipedia') {
-      const information = section.Information || [];
-      if (information.length > 0) {
-        const titlesToMatch = [recordTitle, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
-        for (const info of information) {
-          const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
-          if (wikiTitle && titlesToMatch.includes(wikiTitle)) {
-            return info.URL;
-          }
-        }
-        for (const info of information) {
-          const wikiTitle = info.Value?.StringWithMarkup?.[0]?.String?.toLowerCase();
-          if (wikiTitle) {
-            for (const titleToMatch of titlesToMatch) {
-              if (titleToMatch.includes(wikiTitle) || wikiTitle.includes(titleToMatch)) {
-                return info.URL;
-              }
-            }
-          }
-        }
-        const firstInfo = information[0];
-        if (firstInfo && firstInfo.URL) {
-          return firstInfo.URL;
-        }
-      }
-    }
-    if (section.Section) {
-      const result = findWikipediaLink(section.Section, recordTitle, synonyms);
-      if (result) return result;
-    }
-  }
-  return null;
-}
-
 export async function getCASBySmiles(smiles) {
   const cid = await getPubChemCID(smiles);
   if (!cid) return { cid: null, cas: null };
@@ -107,11 +80,4 @@ export async function getIUPACNameBySmiles(smiles) {
   if (!cid) return { cid: null, iupacName: null };
   const iupacName = await getIUPACNameByCID(cid);
   return { cid, iupacName };
-}
-
-export async function getWikipediaUrlByCID(cid) {
-  if (!cid) return { cid: null, wikipediaUrl: null };
-  const data = await getPubChemData(cid);
-  const wikipediaUrl = findWikipediaLink(data.Record?.Section, data.Record?.RecordTitle);
-  return { cid, wikipediaUrl };
 }
