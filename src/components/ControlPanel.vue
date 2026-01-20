@@ -67,13 +67,13 @@
 
 <script>
 import {
-  getWikipediaUrlByCID,
   getMolecularFormulaByCID,
   getPubChemCID,
   getCASByCID,
   getIUPACNameByCID,
   getPubChemCompoundUrlByCID,
 } from '@/utils/pubchem';
+import { getWikipediaUrlByCID } from '@/utils/wikipedia';
 import { 
   getDrugBankInfoBySmiles,
   getDrugBankFuzzySearchUrl,
