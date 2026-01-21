@@ -6,7 +6,7 @@ export async function generateSmilesLink(smiles) {
   const longUrl = currentUrl.toString();
   
   try {
-    const response = await fetch('https://ssmiles.pages.dev/', {
+    const response = await fetch('https://ssslink.netlify.app/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
