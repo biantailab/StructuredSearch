@@ -1,7 +1,7 @@
 <template>
   <div v-if="show" class="molview-container" ref="molviewContainer">
     <div class="molview-header">
-      <span>3D</span>
+      <span class="title">3D</span>
       <div class="mode-selector">
         <button 
           v-for="mode in modes" 
@@ -61,22 +61,12 @@ export default {
   watch: {
     smiles: {
       immediate: true,
-      handler(newSmiles) {
-        if (this.show) {
-          this.$nextTick(() => {
-            this.update3DView();
-          });
-        }
+      handler() {
       }
     },
     show: {
       immediate: true,
-      handler(newShow) {
-        if (newShow) {
-          this.$nextTick(() => {
-            this.update3DView();
-          });
-        }
+      handler() {
       }
     }
   },
@@ -85,14 +75,6 @@ export default {
   beforeUnmount() {
   },
   methods: {
-    update3DView() {
-      if (!this.$el) return;
-      
-      const iframe = this.$el.querySelector('.molview-frame');
-      if (iframe) {
-        iframe.src = this.molviewUrl;
-      }
-    },
     close() {
       this.$emit('close');
     },
@@ -124,7 +106,7 @@ export default {
   padding: 8px;
   background: #f5f5f5;
   border-bottom: 1px solid #ccc;
-  height: 25px;
+  height: 12px;
 }
 
 .molview-header span {
@@ -162,25 +144,23 @@ export default {
   position: relative;
 }
 
+.title {
+  cursor: default;
+  color: #757575;
+  font-family: sans-serif;
+}
+
 .close-button {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 25px;
   cursor: pointer;
   padding: 0 8px;
   display: flex;
   align-items: center;
   height: 100%;
-}
-
-.close-button svg {
-  display: block;
-  height: 20px;
-  width: 20px;
-}
-
-.close-button:hover {
-  color: #666;
+  color: #757575;
+  font-family: sans-serif;
 }
 
 .molview-frame {
@@ -205,7 +185,7 @@ export default {
   }
 
   .molview-header {
-    padding: 4px 8px;
+    padding: 6px 8px;
   }
 
   .close-button {
