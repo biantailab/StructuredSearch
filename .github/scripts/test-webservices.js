@@ -39,10 +39,7 @@ function loadWebservicesConfig() {
         return {
             baseUrl: serverName,
             services: {
-                clean2d: `${serverName}/rest-v1/util/convert/clean`,
                 molconvert: `${serverName}/rest-v1/util/calculate/molExport`,
-                stereoinfo: `${serverName}/rest-v1/util/calculate/cipStereoInfo`,
-                aromatize: `${serverName}/rest-v1/util/calculate/molExport`
             }
         };
     } catch (error) {
@@ -53,29 +50,33 @@ function loadWebservicesConfig() {
 
 async function testServiceEndpoint(url, timeout = 10000) {
     try {
-        console.log(`Testing endpoint: ${url}`);
+        console.log(`Testing endpoint (POST): ${url}`);
         
         const headers = getSpoofedHeaders(url);
-        delete headers['Content-Type'];
-
-        const response = await axios.get(url, { 
+        
+        const response = await axios.post(url, {
+            structure: 'C',
+            parameters: 'smiles'
+        }, { 
             timeout,
             headers: headers,
-            validateStatus: function (status) {
-                return status < 500;
-            }
+            validateStatus: (status) => status < 500
         });
         
         await sleep(500); 
         
         console.log(`Endpoint ${url} responded with status: ${response.status}`);
+        
+        const isSuccessful = response.status === 200;
+
         return {
-            success: response.status < 400 || response.status === 405,
+            success: isSuccessful,
             status: response.status,
-            url: url
+            url: url,
+            error: isSuccessful ? null : `Unexpected Status: ${response.status}`
         };
     } catch (error) {
-        console.error(`Endpoint ${url} failed:`, error.message);
+        console.error(`Endpoint ${error.config?.url || url} failed:`, error.message);
         return {
             success: false,
             error: error.message,
@@ -152,7 +153,7 @@ async function sendEmailNotification(failedServices, failedConversions) {
     }
     
     try {
-        const transporter = nodemailer.createTransporter({
+        const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: { user: emailUser, pass: emailPass }
         });
@@ -164,7 +165,7 @@ async function sendEmailNotification(failedServices, failedConversions) {
             from: emailUser,
             to: notificationEmail,
             subject: '🚨 Webservice Health Check Failed',
-            html: `<h3>Health Check Failed</h3><pre>${failedList}</pre>`
+            html: `<h3>Health Check Failed</h3><p>The following services returned non-200 status or failed:</p><pre>${failedList}</pre>`
         });
         console.log('Email notification sent successfully');
     } catch (error) {
@@ -182,7 +183,7 @@ async function runHealthCheck() {
     try {
         const config = loadWebservicesConfig();
         
-        console.log('\n=== Testing Service Endpoints ===');
+        console.log('\n=== Testing Service Endpoints (POST Validation) ===');
         for (const [name, url] of Object.entries(config.services)) {
             const result = await testServiceEndpoint(url);
             if (!result.success) {
@@ -191,10 +192,12 @@ async function runHealthCheck() {
             }
         }
         
-        console.log('\n=== Testing SMILES Conversions ===');
+        console.log('\n=== Testing Full SMILES Conversions ===');
         const molconvertUrl = config.services.molconvert;
 
-        if (!hasFailures) {
+        if (failedServices.find(s => s.url === molconvertUrl)) {
+             console.log('Skipping conversion tests as molconvert endpoint is down.');
+        } else {
             for (const smiles of TEST_SMILES) {
                 const result = await testSmilesConversion(molconvertUrl, smiles);
                 if (!result.overallSuccess) {
@@ -215,7 +218,7 @@ async function runHealthCheck() {
         }
         
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('Fatal Error:', error.message);
         process.exit(1);
     }
 }

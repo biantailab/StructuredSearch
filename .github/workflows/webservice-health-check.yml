@@ -64,9 +64,8 @@ jobs:
             
             ### Next Steps
             1. Check the webservice endpoints in \`public/marvin/js/webservices.js\`
-            2. Verify the server status at: https://marvinjs.agungxenos.eu.org
-            3. Test the conversion functionality manually
-            4. Update the webservice URLs if necessary
+            2. Test the conversion functionality manually
+            3. Update the webservice URLs if necessary
             
             ### Logs
             Check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed logs.
