@@ -49,7 +49,8 @@
           <option value="cas">CAS</option>
           <option value="iupac" title="IUPACName">Name</option>
           <option value="formula" title="Molecular Formula">Formula</option>
-          <option value="link" title="Compound Link">Link</option>
+          <option value="link" title="Short SMILES Link">Link</option>
+          <option value="cas_link" title="CAS Link">CAS Link</option>
         </select>
         <button @click="handle3DView" :disabled="!smilesValue">3D</button>
         <button @click="handleHNMR" :disabled="!smilesValue">HNMR</button>
@@ -202,32 +203,35 @@ export default {
       if (!this.smilesValue) return;
       
       let textToCopy = this.smilesValue;
-      
+      const label = type === 'link' ? 'Link' : 'SMILES';
+
       try {
         if (type === 'link') {
-          const originalUrl = new URL(window.location.href);
+          const originalUrl = new URL(window.location.origin + window.location.pathname);
           originalUrl.searchParams.set('smiles', this.smilesValue);
           const longUrl = originalUrl.toString();
           
           try {
-            textToCopy = await generateSmilesLink(this.smilesValue);
-            if (textToCopy === longUrl) {
-              throw new Error('Short URL service returned original URL');
+            const shortUrl = await generateSmilesLink(this.smilesValue);
+            
+            if (shortUrl && shortUrl !== longUrl) {
+              await this.copyWithFeedback(label, shortUrl);
+            } else {
+              throw new Error();
             }
-            await navigator.clipboard.writeText(textToCopy);
-            alert('短链接已复制到剪贴板');
-          } catch (apiError) {
-            console.error('短链接生成服务不可用:', apiError);
-            textToCopy = longUrl;
-            await navigator.clipboard.writeText(textToCopy);
-            alert('短链接生成服务暂时不可用，已复制原链接到剪贴板');
+          } catch (_) {
+            const ok = await this.copyTextToClipboard(longUrl);
+            if (ok) {
+              this.notifyUser('短链接生成服务暂时不可用，已复制原链接到剪贴板', 'success');
+            } else {
+              this.notifyUser(this.messages.copyFail(label, longUrl), 'error');
+            }
           }
         } else {
-          await navigator.clipboard.writeText(textToCopy);
+          await this.copyWithFeedback(label, textToCopy);
         }
-      } catch (error) {
-        console.error('复制失败:', error);
-        alert('复制失败，请手动复制');
+      } catch (_) {
+        this.notifyUser(this.messages.copyFail(label, textToCopy), 'error');
       }
     },
     
@@ -417,7 +421,33 @@ export default {
         } finally {
           this.loading = false;
         }
-      } else if (value === 'cas' || value === 'iupac' || value === 'formula') {
+      } 
+      else if (value === 'cas_link') {
+        this.loading = true;
+        try {
+          const cid = await this.ensureCID();
+          if (!cid) {
+            this.notifyUser(this.messages.compoundNotFound, 'warning');
+            return;
+          }
+          const cas = await getCASByCID(cid);
+          if (!cas) {
+            this.notifyUser(this.messages.casNotFound, 'warning');
+            return;
+          }
+          
+          const url = new URL(window.location.origin + window.location.pathname);
+          url.searchParams.set('cas', cas);
+          const casLink = url.toString();
+          
+          await this.copyWithFeedback('CAS Link', casLink);
+        } catch (error) {
+          this.notifyUser(this.messages.fetchFail, 'error');
+        } finally {
+          this.loading = false;
+        }
+      }
+      else if (value === 'cas' || value === 'iupac' || value === 'formula') {
         this.handleGet(value);
       }
       event.target.value = '';
@@ -491,7 +521,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 734px;
+  max-width: 740px;
   gap: 4px;
 }
 
@@ -517,7 +547,7 @@ export default {
   gap: 4px;
   flex-wrap: wrap;
   width: 100%;
-  max-width: 734px;
+  max-width: 740px;
 }
 
 /* Button and select styles */
@@ -546,7 +576,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 743px) {
+@media screen and (max-width: 749px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;

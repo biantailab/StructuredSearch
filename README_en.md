@@ -2,7 +2,6 @@
 
 # StructuredSearch
 
-
 <p align="center">
     <a href="README.md">简体中文</a> | English
 </p>
@@ -35,7 +34,9 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## Functionality
 
 - Real-time conversion of smiles and mol
-- Supports passing smiles via URL https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
+- URL input
+    - smiles https://structuredsearch.pages.dev/?smiles=CCCCCCCCC=O
+    - cas https://structuredsearch.pages.dev/?cas=124-19-6
 - Example:
     - Benzyl titanium
     - Quinine
@@ -49,7 +50,8 @@ Powered by [Chemaxon](https://chemaxon.com)
         - If the compound exists in the PubChem database, it is acquire directly
         - If the compound does not exist in the PubChem database, it is obtained through MarvinJS's naming service
     - Molecular Formula
-    - Compound Link
+    - (Short SMILES)Link
+    - CAS Link
 - 3D visualization
     - supports real-time updates with mol and smiles
     - types
