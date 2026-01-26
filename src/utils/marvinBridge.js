@@ -122,14 +122,20 @@ async function _loadInitialSmilesFromUrlIfPresent() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const smiles = urlParams.get('smiles');
-  if (!smiles) {
-    return;
-  }
+  const cas = urlParams.get('cas');
 
   try {
-    await _sketcher.importStructure('smiles', smiles);
-    _notifySmilesChange(smiles);
-  } catch (_) {}
+    if (cas) {
+      await _sketcher.importStructure(null, cas.trim());
+      const currentSmiles = await _sketcher.exportStructure('smiles');
+      _notifySmilesChange(currentSmiles);
+    } else if (smiles) {
+      await _sketcher.importStructure('smiles', smiles.trim());
+      _notifySmilesChange(smiles);
+    }
+  } catch (err) {
+    console.error("Failed to load initial structure from URL", err);
+  }
 }
 
 export function onSmilesChange(callback) {
@@ -206,6 +212,22 @@ export async function importSmiles(smiles) {
   try {
     await sketcher.importStructure('smiles', value);
     _notifySmilesChange(value);
+  } catch (_) {}
+}
+
+export async function importCas(cas) {
+  let sketcher;
+  try {
+    sketcher = await whenReady();
+  } catch (_) {
+    return;
+  }
+  if (!sketcher || !cas) return;
+
+  try {
+    await sketcher.importStructure(null, cas.trim());
+    const currentSmiles = await sketcher.exportStructure('smiles');
+    _notifySmilesChange(currentSmiles);
   } catch (_) {}
 }
 

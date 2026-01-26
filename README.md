@@ -34,7 +34,9 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## 功能
 
 - smiles与结构式互相转换
-- 支持smiles通过URL传入 https://structuredsearch.pages.dev/?smiles=C1=CC=CC=C1
+- URL传入
+    - smiles https://structuredsearch.pages.dev/?smiles=CCCCCCCCC=O
+    - cas https://structuredsearch.pages.dev/?cas=124-19-6
 - Example:
     - Benzyl titanium (苄钛)
     - Quinine (奎宁)
@@ -48,7 +50,8 @@ Powered by [Chemaxon](https://chemaxon.com)
         - 当pubchem数据库中存在该化合物则直接获取
         - 当pubchem数据库中不存在该化合物则通过marvinjs的命名服务获取
     - Molecular Formula (分子式)
-    - Compound Link
+    - (Short SMILES)Link
+    - CAS Link
 - 3D可视化
     - 可与结构式，smiles进行实时更新
     - 种类
