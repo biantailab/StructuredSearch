@@ -228,10 +228,16 @@ export default {
             }
           }
         } else {
-          await this.copyWithFeedback(label, textToCopy);
+          if (label === 'SMILES') {
+            await this.copyTextToClipboard(textToCopy);
+          } else {
+            await this.copyWithFeedback(label, textToCopy);
+          }
         }
       } catch (_) {
-        this.notifyUser(this.messages.copyFail(label, textToCopy), 'error');
+        if (label !== 'SMILES') {
+          this.notifyUser(this.messages.copyFail(label, textToCopy), 'error');
+        }
       }
     },
     
