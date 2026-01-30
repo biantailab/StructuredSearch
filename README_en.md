@@ -66,7 +66,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## Historical versions
 
-- Version based on external web services [Click to access](https://structuresearch.pages.dev)
+- Version based on external web services [cloudflare pages](https://structuresearch.pages.dev) / [netlify pages](https://structuresearch.netlify.app)
+- Version based on internal web services [cloudflare pages](https://structursearch.pages.dev) / [netlify pages](https://structursearch.netlify.app)
 
 ## More
 
