@@ -1,7 +1,16 @@
 # netlify.toml
 
+[[edge_functions]]
+  path = "/rest-v1/*"
+  function = "services"
+
 [[redirects]]
   from = "/api/molscribe/*"
   to = "https://yujieq-molscribe.hf.space/:splat"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
