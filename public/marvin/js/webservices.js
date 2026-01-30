@@ -1,9 +1,5 @@
-// Define the default location of webservices
-
 function getDefaultServicesPrefix() {
-    var servername = "https://marvinjs-service.netlify.app";
-    var webapp = "";
-    return servername + webapp;
+    return ""; 
 }
 
 function getDefaultServices() {
