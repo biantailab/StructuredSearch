@@ -17,7 +17,6 @@ async function handleProxyRequest(request, nodes) {
     try {
       const targetUrl = nodeBase + cleanPath;
       
-
       const response = await fetch(targetUrl, {
         method: request.method,
         headers: {
@@ -27,7 +26,9 @@ async function handleProxyRequest(request, nodes) {
         signal: AbortSignal.timeout(5000)
       });
 
-      if (response.status) {
+      const isRetriable = response.status >= 500 || response.status === 429 || response.status === 451;
+
+      if (!isRetriable) {
         return new Response(response.body, {
           status: response.status,
           headers: {
@@ -36,6 +37,9 @@ async function handleProxyRequest(request, nodes) {
           }
         });
       }
+
+      lastError = new Error(`Node returned ${response.status}`);
+      
     } catch (err) {
       lastError = err;
     }
@@ -43,7 +47,7 @@ async function handleProxyRequest(request, nodes) {
 
   return new Response(JSON.stringify({ 
     error: "Service Gateway Error", 
-    message: "All upstream nodes are unreachable.",
+    message: "All upstream nodes are unreachable or blocked.",
     debug: lastError?.message 
   }), {
     status: 502,
