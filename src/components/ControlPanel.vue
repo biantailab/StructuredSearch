@@ -29,7 +29,7 @@
         <select @change="loadExample" class="example-select">
           <option value="">Example:</option>
           <option value="C(C1=CC=CC=C1)[Ti](CC1=CC=CC=C1)(CC1=CC=CC=C1)CC1=CC=CC=C1">Benzyl titanium</option>
-          <option value="COC1C=CC2C(=C([C@@H](O)[C@H]3N4C[C@H](C=C)C(CC4)C3)C=CN=2)C=1"> Quinine</option>
+          <option value="COC1C=CC2C(=C([C@@H](O)[C@H]3N4C[C@H](C=C)C(CC4)C3)C=CN=2)C=1">Quinine</option>
           <option value="CCN1C=C(C(=O)C2=CC(=C(C=C21)N3CCNCC3)F)C(=O)O">Norfloxacin</option>
         </select>
         <button @click="handleImageUpload" title="Upload structure image">
@@ -593,4 +593,4 @@ export default {
     min-width: 100px;
   }
 }
-</style> 
+</style>
