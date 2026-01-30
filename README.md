@@ -66,7 +66,8 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 历史版本
 
-- 基于外部网络服务的版本 [点击访问](https://structuresearch.pages.dev)
+- 基于外部网络服务的版本 [cloudflare pages](https://structuresearch.pages.dev) / [netlify pages](https://structuresearch.netlify.app)
+- 基于内部网络服务的版本 [cloudflare pages](https://structursearch.pages.dev) / [netlify pages](https://structursearch.netlify.app)
 
 ## 更多
 
