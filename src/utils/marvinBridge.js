@@ -156,7 +156,10 @@ export async function initMarvinEditor(containerSelector) {
   _initPromise = (async () => {
     await _ensureChemicalizeMarvinJs();
 
-    const createOptions = {};
+    const createOptions = {
+      'data-toolbars': 'reporting' 
+    };
+    
     if (window.ChemicalizeMarvinJsConfig && Array.isArray(window.ChemicalizeMarvinJsConfig.userDomains)) {
       createOptions.userDomains = window.ChemicalizeMarvinJsConfig.userDomains;
     }
