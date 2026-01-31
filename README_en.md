@@ -15,7 +15,9 @@ Powered by [Chemaxon](https://chemaxon.com)
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov) - Data source
 - [molview](https://molview.org) - 3D visualization
 - [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - Molecular image recognition
-- [netlify](https://netlify.com) + [neon](https://neon.com) - short url service
+- Short link service
+    - [cloudflare](https://www.cloudflare.com)
+    - [netlify](https://netlify.com) + [neon](https://neon.com) 
 
 ## Search target
 
