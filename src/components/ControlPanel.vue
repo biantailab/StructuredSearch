@@ -249,8 +249,8 @@ export default {
   
       let textToCopy = this.smilesValue;
       let label = 'SMILES';
-      let displayText = this.smilesValue; 
-      
+      let displayText = this.smilesValue;
+
       try {
         if (type === 'link') {
           textToCopy = await generateSmilesLink(this.smilesValue);
@@ -260,16 +260,19 @@ export default {
             displayText = textToCopy;
           } else {
             label = '原链接';
-            displayText = '完整长链接'; 
+            displayText = '完整长链接';
           }
         }
 
         if (label === 'SMILES') {
           await this.copyTextToClipboard(textToCopy);
         } else {
-          await this.copyWithFeedback(label, displayText);
-          
-          await this.copyTextToClipboard(textToCopy);
+          const success = await this.copyTextToClipboard(textToCopy);
+          if (success) {
+            this.notifyUser(this.messages.copySuccess(label, displayText), 'success');
+          } else {
+            this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+          }
         }
       } catch (_) {
         if (label !== 'SMILES') {
