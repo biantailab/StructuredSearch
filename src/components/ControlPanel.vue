@@ -201,42 +201,47 @@ export default {
 
     async handleCopy(type = 'smiles') {
       if (!this.smilesValue) return;
-      
+
+      const shouldShowLoading = type === 'link';
+      if (shouldShowLoading) {
+        this.loading = true;
+      }
+
       let textToCopy = this.smilesValue;
-      const label = type === 'link' ? 'Link' : 'SMILES';
+      let label = 'SMILES';
+      let displayText = this.smilesValue;
 
       try {
         if (type === 'link') {
-          const originalUrl = new URL(window.location.origin + window.location.pathname);
-          originalUrl.searchParams.set('smiles', this.smilesValue);
-          const longUrl = originalUrl.toString();
+          textToCopy = await generateSmilesLink(this.smilesValue);
           
-          try {
-            const shortUrl = await generateSmilesLink(this.smilesValue);
-            
-            if (shortUrl && shortUrl !== longUrl) {
-              await this.copyWithFeedback(label, shortUrl);
-            } else {
-              throw new Error();
-            }
-          } catch (_) {
-            const ok = await this.copyTextToClipboard(longUrl);
-            if (ok) {
-              this.notifyUser('短链接生成服务暂时不可用，已复制原链接到剪贴板', 'success');
-            } else {
-              this.notifyUser(this.messages.copyFail(label, longUrl), 'error');
-            }
-          }
-        } else {
-          if (label === 'SMILES') {
-            await this.copyTextToClipboard(textToCopy);
+          if (textToCopy.includes('/s/')) {
+            label = '短链接';
+            displayText = textToCopy;
           } else {
-            await this.copyWithFeedback(label, textToCopy);
+            label = '原链接';
+            displayText = '完整长链接';
+          }
+        }
+
+        if (label === 'SMILES') {
+          await this.copyTextToClipboard(textToCopy);
+        } else {
+          const success = await this.copyTextToClipboard(textToCopy);
+          
+          if (success) {
+            this.notifyUser(this.messages.copySuccess(label, displayText), 'success');
+          } else {
+            this.notifyUser(this.messages.copyFail(label, displayText), 'error');
           }
         }
       } catch (_) {
         if (label !== 'SMILES') {
-          this.notifyUser(this.messages.copyFail(label, textToCopy), 'error');
+          this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+        }
+      } finally {
+        if (shouldShowLoading) {
+          this.loading = false;
         }
       }
     },

@@ -1,5 +1,13 @@
 # netlify.toml
 
+[[edge_functions]]
+  path = "/api/shorten"
+  function = "shortener"
+
+[[edge_functions]]
+  path = "/s/*"
+  function = "shortener"
+
 [[redirects]]
   from = "/api/molscribe/*"
   to = "https://yujieq-molscribe.hf.space/:splat"
