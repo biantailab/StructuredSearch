@@ -248,32 +248,33 @@ export default {
       }
   
       let textToCopy = this.smilesValue;
+      let label = 'SMILES';
+      let displayText = this.smilesValue; 
       
       try {
         if (type === 'link') {
-          const originalUrl = new URL(window.location.href);
-          originalUrl.searchParams.set('smiles', this.smilesValue);
-          const longUrl = originalUrl.toString();
+          textToCopy = await generateSmilesLink(this.smilesValue);
           
-          try {
-            textToCopy = await generateSmilesLink(this.smilesValue);
-            if (textToCopy === longUrl) {
-              throw new Error('Short URL service returned original URL');
-            }
-            await navigator.clipboard.writeText(textToCopy);
-            alert('短链接已复制到剪贴板');
-          } catch (apiError) {
-            console.error('短链接生成服务不可用:', apiError);
-            textToCopy = longUrl;
-            await navigator.clipboard.writeText(textToCopy);
-            alert('短链接生成服务暂时不可用，已复制原链接到剪贴板');
+          if (textToCopy.includes('/s/')) {
+            label = '短链接';
+            displayText = textToCopy;
+          } else {
+            label = '原链接';
+            displayText = '完整长链接'; 
           }
-        } else {
-          await navigator.clipboard.writeText(textToCopy);
         }
+
+        const success = await this.copyTextToClipboard(textToCopy);
+
+        if (success) {
+            this.notifyUser(this.messages.copySuccess(label, displayText), 'success');
+        } else {
+            this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+        }
+
       } catch (error) {
         console.error('复制失败:', error);
-        alert('复制失败，请手动复制');
+        this.notifyUser(this.messages.copyFail(label, displayText), 'error');
       } finally {
         if (shouldShowLoading) {
           this.loading = false;

@@ -1,6 +1,14 @@
 # netlify.toml
 
 [[edge_functions]]
+  path = "/api/shorten"
+  function = "shortener"
+
+[[edge_functions]]
+  path = "/s/*"
+  function = "shortener"
+  
+[[edge_functions]]
   path = "/rest-v1/*"
   function = "services"
 
