@@ -264,17 +264,17 @@ export default {
           }
         }
 
-        const success = await this.copyTextToClipboard(textToCopy);
-
-        if (success) {
-            this.notifyUser(this.messages.copySuccess(label, displayText), 'success');
+        if (label === 'SMILES') {
+          await this.copyTextToClipboard(textToCopy);
         } else {
-            this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+          await this.copyWithFeedback(label, displayText);
+          
+          await this.copyTextToClipboard(textToCopy);
         }
-
-      } catch (error) {
-        console.error('复制失败:', error);
-        this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+      } catch (_) {
+        if (label !== 'SMILES') {
+          this.notifyUser(this.messages.copyFail(label, displayText), 'error');
+        }
       } finally {
         if (shouldShowLoading) {
           this.loading = false;
