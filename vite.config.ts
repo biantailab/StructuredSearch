@@ -15,8 +15,12 @@ export default defineConfig({
       '/api/molscribe': {
         target: 'https://yujieq-molscribe.hf.space',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/molscribe/, '')
+        rewrite: (path: string) => path.replace(/^\/api\/molscribe/, '')
       }
     }
+  },
+  esbuild: {
+    jsxFactory: 'h',
+    jsxFragment: 'Fragment'
   }
 })

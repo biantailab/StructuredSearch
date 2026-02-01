@@ -5,16 +5,16 @@ const apiClient = axios.create({
   timeout: 60000, 
 });
 
-function fileToBase64(file) {
+function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
 }
 
-export async function imageToSmiles(file) {
+export async function imageToSmiles(file: File): Promise<string> {
   try {
     const base64Image = await fileToBase64(file);
 

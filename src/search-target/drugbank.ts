@@ -1,6 +1,6 @@
-import { getPubChemCID, getPubChemData, getCASByCID } from './pubchem';
+import { getPubChemCID, getPubChemData, getCASByCID } from '../data-source/pubchem';
 
-function findDrugBankId(sections) {
+function findDrugBankId(sections: any[]): { id: string; url: string } | null {
   for (const section of sections || []) {
     if (section.TOCHeading === 'DrugBank ID') {
       const info = section.Information?.[0];
@@ -22,7 +22,7 @@ function findDrugBankId(sections) {
   return null;
 }
 
-export async function getDrugBankInfoBySmiles(smiles) {
+export async function getDrugBankInfoBySmiles(smiles: string): Promise<{ cid: number | null; drugBankUrl: string | null; cas: string | null }> {
   try {
     const cid = await getPubChemCID(smiles);
     if (!cid) return { cid: null, drugBankUrl: null, cas: null };
@@ -42,11 +42,11 @@ export async function getDrugBankInfoBySmiles(smiles) {
   }
 }
 
-export function getDrugBankFuzzySearchUrl(smiles) {
+export function getDrugBankFuzzySearchUrl(smiles: string): string {
   return `https://go.drugbank.com/structures/search/small_molecule_drugs/structure?utf8=✓&searcher=structure&structure_search_type=substructure&structure=${encodeURIComponent(smiles)}#results`;
 }
 
-export function getDrugBankUrlByCAS(cas) {
+export function getDrugBankUrlByCAS(cas: string | null): string | null {
   if (!cas) return null;
   return `https://go.drugbank.com/unearth/q?searcher=drugs&query=${encodeURIComponent(cas)}`;
 }

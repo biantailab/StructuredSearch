@@ -1,4 +1,4 @@
-export async function generateSmilesLink(smiles) {
+export async function generateSmilesLink(smiles: string): Promise<string> {
   if (!smiles) return '';
   
   const currentUrl = new URL(window.location.href);

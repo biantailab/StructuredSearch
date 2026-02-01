@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { initMarvinEditor } from '@/utils/marvinBridge';
+import { initMarvinEditor } from '@/marvinjs/bridge';
 
 export default {
   name: 'MarvinEditor',
