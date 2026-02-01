@@ -1,4 +1,4 @@
-export async function getPubChemCID(smiles) {
+export async function getPubChemCID(smiles: string): Promise<number | null> {
   const searchUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/cids/JSON`;
   try {
     const searchResponse = await fetch(searchUrl);
@@ -10,36 +10,31 @@ export async function getPubChemCID(smiles) {
       return null;
     }
     return searchData.IdentifierList.CID[0];
-  } catch (e) {
+  } catch (e: unknown) {
     return null;
   }
 }
 
-export function getPubChemCompoundUrlByCID(cid) {
-  if (!cid) return null;
-  return `https://pubchem.ncbi.nlm.nih.gov/compound/${cid}`;
-}
-
-export async function getCASByCID(cid) {
+export async function getCASByCID(cid: number): Promise<string | null> {
   const casUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
   const casResponse = await fetch(casUrl);
   if (!casResponse.ok) throw new Error('CAS 查询失败');
   const casData = await casResponse.json();
   const synonyms = casData.InformationList?.Information?.[0]?.Synonym || [];
-  const casNumber = synonyms.find(syn => /^\d+-\d{2}-\d$/.test(syn) && !syn.startsWith('EC'));
+  const casNumber = synonyms.find((syn: string) => /^\d+-\d{2}-\d$/.test(syn) && !syn.startsWith('EC'));
   return casNumber || null;
 }
 
-export async function getSynonymsByCID(cid) {
+export async function getSynonymsByCID(cid: number): Promise<string[]> {
   const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/synonyms/JSON`;
   const response = await fetch(url);
   if (!response.ok) throw new Error('Synonyms 查询失败');
   const data = await response.json();
   const synonyms = data.InformationList?.Information?.[0]?.Synonym || [];
-  return Array.from(new Set((synonyms || []).map((s) => (s || '').trim()).filter(Boolean)));
+  return Array.from(new Set((synonyms || []).map((s: string) => (s || '').trim()).filter(Boolean)));
 }
 
-export async function getPubChemData(cid) {
+export async function getPubChemData(cid: number): Promise<any> {
   const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/${cid}/JSON/`;
   const response = await fetch(url);
   if (!response.ok) {
@@ -48,7 +43,7 @@ export async function getPubChemData(cid) {
   return await response.json();
 }
 
-export async function getIUPACNameByCID(cid) {
+export async function getIUPACNameByCID(cid: number): Promise<string | null> {
   const nameUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/IUPACName/JSON`;
   const nameResponse = await fetch(nameUrl);
   if (!nameResponse.ok) {
@@ -58,7 +53,7 @@ export async function getIUPACNameByCID(cid) {
   return nameData.PropertyTable?.Properties?.[0]?.IUPACName || null;
 }
 
-export async function getMolecularFormulaByCID(cid) {
+export async function getMolecularFormulaByCID(cid: number): Promise<string | null> {
   const formulaUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/property/MolecularFormula/JSON`;
   const formulaResponse = await fetch(formulaUrl);
   if (!formulaResponse.ok) {
@@ -68,14 +63,14 @@ export async function getMolecularFormulaByCID(cid) {
   return formulaData.PropertyTable?.Properties?.[0]?.MolecularFormula || null;
 }
 
-export async function getCASBySmiles(smiles) {
+export async function getCASBySmiles(smiles: string): Promise<{ cid: number | null; cas: string | null }> {
   const cid = await getPubChemCID(smiles);
   if (!cid) return { cid: null, cas: null };
   const cas = await getCASByCID(cid);
   return { cid, cas };
 }
 
-export async function getIUPACNameBySmiles(smiles) {
+export async function getIUPACNameBySmiles(smiles: string): Promise<{ cid: number | null; iupacName: string | null }> {
   const cid = await getPubChemCID(smiles);
   if (!cid) return { cid: null, iupacName: null };
   const iupacName = await getIUPACNameByCID(cid);

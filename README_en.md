@@ -1,4 +1,4 @@
-<img src="imgs/structuredsearch_logo.png" alt="StructuredSearch logo" width="100" height="100" align="right" />
+<img src="imgs/logo.png" alt="StructuredSearch logo" width="100" height="100" align="right" />
 
 # StructuredSearch
 
@@ -13,7 +13,6 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## Dependencies
 
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov) - Data source
-- [molview](https://molview.org) - 3D visualization
 - [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - Molecular image recognition
 - Short link service
     - [cloudflare](https://www.cloudflare.com)
@@ -31,7 +30,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## Demo
 
-![StructuredSearch](imgs/structuredsearch.png)
+![demo](imgs/demo.png)
 
 ## Functionality
 
@@ -54,11 +53,6 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Molecular Formula
     - (Short SMILES)Link
     - CAS Link
-- 3D visualization
-    - supports real-time updates with mol and smiles
-    - types
-        | ![ball](imgs/ball.png) | ![stick](imgs/stick.png) | ![vdw](imgs/vdw.png) | ![wireframe](imgs/wireframe.png) |
-        |---|---|---|---|
 - HNMR search
 - PubChem search
 - Wikipedia search

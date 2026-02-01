@@ -1,4 +1,4 @@
-<img src="imgs/structuredsearch_logo.png" alt="StructuredSearch logo" width="100" height="100" align="right" />
+<img src="imgs/logo.png" alt="StructuredSearch logo" width="100" height="100" align="right" />
 
 # StructuredSearch
 
@@ -13,7 +13,6 @@ Powered by [Chemaxon](https://chemaxon.com)
 ## 依赖
 
 - [pubchem](https://pubchem.ncbi.nlm.nih.gov) - 数据源
-- [molview](https://molview.org) - 3D可视化
 - [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - 分子图像识别
 - 短链服务
     - [cloudflare](https://www.cloudflare.com)
@@ -31,7 +30,7 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## 预览
 
-![StructuredSearch](imgs/structuredsearch.png)
+![demo](imgs/demo.png)
 
 ## 功能
 
@@ -54,11 +53,6 @@ Powered by [Chemaxon](https://chemaxon.com)
     - Molecular Formula (分子式)
     - (Short SMILES)Link
     - CAS Link
-- 3D可视化
-    - 可与结构式，smiles进行实时更新
-    - 种类
-        | ![ball](imgs/ball.png) | ![stick](imgs/stick.png) | ![vdw](imgs/vdw.png) | ![wireframe](imgs/wireframe.png) |
-        |---|---|---|---|
 - HNMR搜索
 - PubChem搜索
 - Wikipedia搜索

@@ -1,9 +1,42 @@
-let _initPromise = null;
-let _sketcher = null;
-let _molchangeBound = false;
-const _smilesChangeListeners = new Set();
+// 类型定义
+interface ChemicalizeMarvinJsConfig {
+  serviceBackendDomain: string;
+  apiKey: string;
+  userDomains: string[];
+  serviceDomain: string;
+  adminDomain: string;
+}
 
-function _waitForInitStart(timeoutMs = 15000) {
+interface MarvinJsEditor {
+  sketcherInstance?: MarvinJsSketcher;
+}
+
+interface MarvinJsSketcher {
+  on: (event: string, callback: (...args: any[]) => void) => void;
+  exportStructure: (format: string) => Promise<string>;
+  importStructure: (format: string | null, data: string) => Promise<void>;
+  clear?: () => void;
+}
+
+// Import services
+import { parseStructureParams, importStructureFromParams } from './paramsService';
+import { SmilesCommunicator } from './smilesCommunicator';
+
+declare global {
+  interface Window {
+    ChemicalizeMarvinJsConfig?: ChemicalizeMarvinJsConfig;
+    ChemicalizeMarvinJs?: {
+      createEditor: (containerSelector: string, options: any) => Promise<MarvinJsEditor>;
+    };
+  }
+}
+
+let _initPromise: Promise<MarvinJsSketcher> | null = null;
+let _sketcher: MarvinJsSketcher | null = null;
+let _molchangeBound = false;
+
+// 确保 MarvinJS 初始化已开始
+function _waitForInitStart(timeoutMs = 15000): Promise<void> {
   if (_initPromise) {
     return Promise.resolve();
   }
@@ -24,6 +57,7 @@ function _waitForInitStart(timeoutMs = 15000) {
   });
 }
 
+// MarvinJS 的配置参数
 function _ensureConfig() {
   if (window.ChemicalizeMarvinJsConfig) {
     if (
@@ -46,9 +80,10 @@ function _ensureConfig() {
   window.ChemicalizeMarvinJsConfig = config;
 }
 
-function _loadScriptOnce(src) {
+// 动态加载 MarvinJS 脚本
+function _loadScriptOnce(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${src}"]`);
+    const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
     if (existing) {
       if (existing.dataset.loaded === 'true') {
         resolve();
@@ -71,6 +106,7 @@ function _loadScriptOnce(src) {
   });
 }
 
+// 确保 MarvinJS 库已加载
 async function _ensureChemicalizeMarvinJs() {
   _ensureConfig();
 
@@ -85,12 +121,9 @@ async function _ensureChemicalizeMarvinJs() {
   }
 }
 
-function _notifySmilesChange(smiles) {
-  _smilesChangeListeners.forEach((cb) => {
-    try {
-      cb(smiles);
-    } catch (_) {}
-  });
+// 通知 SMILES 改变
+function _notifySmilesChange(smiles: string) {
+  SmilesCommunicator.notifyChange(smiles);
 }
 
 async function _bindMolchangeIfNeeded() {
@@ -115,22 +148,20 @@ async function _bindMolchangeIfNeeded() {
   });
 }
 
+// 从 URL 参数加载初始结构
 async function _loadInitialSmilesFromUrlIfPresent() {
   if (!_sketcher || typeof _sketcher.importStructure !== 'function') {
     return;
   }
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const smiles = urlParams.get('smiles');
-  const cas = urlParams.get('cas');
+  const params = parseStructureParams();
+  if (!params.smiles && !params.cas) {
+    return;
+  }
 
   try {
-    if (cas) {
-      await _sketcher.importStructure(null, cas.trim());
-      const currentSmiles = await _sketcher.exportStructure('smiles');
-      _notifySmilesChange(currentSmiles);
-    } else if (smiles) {
-      await _sketcher.importStructure('smiles', smiles.trim());
+    const smiles = await importStructureFromParams(_sketcher, params);
+    if (smiles) {
       _notifySmilesChange(smiles);
     }
   } catch (err) {
@@ -138,17 +169,13 @@ async function _loadInitialSmilesFromUrlIfPresent() {
   }
 }
 
-export function onSmilesChange(callback) {
-  if (typeof callback !== 'function') {
-    return function () {};
-  }
-  _smilesChangeListeners.add(callback);
-  return function () {
-    _smilesChangeListeners.delete(callback);
-  };
+// 监听 SMILES 字符串的变化
+export function onSmilesChange(callback: (smiles: string) => void) {
+  return SmilesCommunicator.subscribe(callback);
 }
 
-export async function initMarvinEditor(containerSelector) {
+// 初始化编辑器
+export async function initMarvinEditor(containerSelector: string) {
   if (_initPromise) {
     return _initPromise;
   }
@@ -156,7 +183,10 @@ export async function initMarvinEditor(containerSelector) {
   _initPromise = (async () => {
     await _ensureChemicalizeMarvinJs();
 
-    const createOptions = {
+    const createOptions: { 
+      'data-toolbars': string;
+      userDomains?: string[];
+    } = {
       'data-toolbars': 'reporting' 
     };
     
@@ -164,8 +194,12 @@ export async function initMarvinEditor(containerSelector) {
       createOptions.userDomains = window.ChemicalizeMarvinJsConfig.userDomains;
     }
 
+    if (!window.ChemicalizeMarvinJs) {
+      throw new Error('ChemicalizeMarvinJs is not available');
+    }
+    
     const editor = await window.ChemicalizeMarvinJs.createEditor(containerSelector, createOptions);
-    _sketcher = editor && editor.sketcherInstance ? editor.sketcherInstance : editor;
+    _sketcher = editor && editor.sketcherInstance ? editor.sketcherInstance : editor as MarvinJsSketcher;
 
     await _bindMolchangeIfNeeded();
     await _loadInitialSmilesFromUrlIfPresent();
@@ -176,6 +210,7 @@ export async function initMarvinEditor(containerSelector) {
   return _initPromise;
 }
 
+// 等待编辑器初始化
 export async function whenReady() {
   if (_sketcher) {
     return _sketcher;
@@ -188,7 +223,8 @@ export async function whenReady() {
   return _initPromise;
 }
 
-export async function importSmiles(smiles) {
+// 将 SMILES 导入编辑器
+export async function importSmiles(smiles: string) {
   let sketcher;
   try {
     sketcher = await whenReady();
@@ -218,7 +254,8 @@ export async function importSmiles(smiles) {
   } catch (_) {}
 }
 
-export async function importCas(cas) {
+// 通过 CAS 导入结构
+export async function importCas(cas: string) {
   let sketcher;
   try {
     sketcher = await whenReady();
@@ -234,6 +271,7 @@ export async function importCas(cas) {
   } catch (_) {}
 }
 
+//  清空编辑器画布
 export async function clearSketch() {
   let sketcher;
   try {
@@ -247,6 +285,7 @@ export async function clearSketch() {
   }
 }
 
+// 导出 SMILES
 export async function exportSmiles() {
   let sketcher;
   try {
@@ -264,6 +303,7 @@ export async function exportSmiles() {
   }
 }
 
+// 导出 IUPACNAME
 export async function exportIupacName() {
   let sketcher;
   try {

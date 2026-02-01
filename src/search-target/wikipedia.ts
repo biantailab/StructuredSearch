@@ -1,11 +1,15 @@
-import { getPubChemData, getSynonymsByCID } from './pubchem';
+import { getPubChemData, getSynonymsByCID } from '../data-source/pubchem';
 
-export function findWikipediaLink(sections, recordTitle, synonyms = []) {
+export function findWikipediaLink(
+  sections: any[],
+  recordTitle: string,
+  synonyms: string[] = []
+): string | null {
   for (const section of sections || []) {
     if (section.TOCHeading === 'Wikipedia') {
       const information = section.Information || [];
       if (information.length > 0) {
-        const normalize = (s) =>
+        const normalize = (s: string): string =>
           (s || '')
             .trim()
             .toLowerCase()
@@ -16,10 +20,10 @@ export function findWikipediaLink(sections, recordTitle, synonyms = []) {
           .filter(Boolean)
           .map((t) => normalize(t));
 
-        let bestUrl = null;
+        let bestUrl: string | null = null;
         let bestScore = -1;
 
-        information.forEach((info) => {
+        information.forEach((info: any) => {
           const url = info.URL || null;
           if (!url) return;
 
@@ -81,10 +85,10 @@ export function findWikipediaLink(sections, recordTitle, synonyms = []) {
   return null;
 }
 
-export async function getWikipediaUrlByCID(cid) {
+export async function getWikipediaUrlByCID(cid: number | null): Promise<{ cid: number | null; wikipediaUrl: string | null }> {
   if (!cid) return { cid: null, wikipediaUrl: null };
   const data = await getPubChemData(cid);
-  let synonyms = [];
+  let synonyms: string[] = [];
   try {
     synonyms = await getSynonymsByCID(cid);
   } catch (_) {}

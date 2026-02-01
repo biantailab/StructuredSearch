@@ -52,7 +52,6 @@
           <option value="link" title="Short SMILES Link">Link</option>
           <option value="cas_link" title="CAS Link">CAS Link</option>
         </select>
-        <button @click="handle3DView" :disabled="!smilesValue">3D</button>
         <button @click="handleHNMR" :disabled="!smilesValue">HNMR</button>
         <button @click="handlePubChem" :disabled="!smilesValue">PubChem</button>
         <button @click="handleGetWikipedia" :disabled="!smilesValue">Wikipedia</button>
@@ -72,17 +71,19 @@ import {
   getPubChemCID,
   getCASByCID,
   getIUPACNameByCID,
-  getPubChemCompoundUrlByCID,
-} from '@/utils/pubchem';
-import { getWikipediaUrlByCID } from '@/utils/wikipedia';
+} from '@/data-source/pubchem';
+import { getWikipediaUrlByCID } from '@/search-target/wikipedia';
+import { getPubChemCompoundUrlByCID } from '@/search-target/pubchem';
 import { 
   getDrugBankInfoBySmiles,
   getDrugBankFuzzySearchUrl,
   getDrugBankUrlByCAS 
-} from '@/utils/drugbank';
-import { generateSmilesLink } from '@/utils/link';
-import { imageToSmiles } from '../utils/ocrService';
-import { clearSketch, exportIupacName, importSmiles, onSmilesChange } from '@/utils/marvinBridge';
+} from '@/search-target/drugbank';
+import { generateSmilesLink } from '@/marvinjs/shortSmilesLink';
+import { imageToSmiles } from '../ocr/molscribe';
+import { clearSketch, exportIupacName, importSmiles } from '@/marvinjs/bridge';
+import { SmilesCommunicator } from '@/marvinjs/smilesCommunicator';
+import { openHNMRPrediction } from '@/search-target/nmrdb';
 
 export default {
   name: 'ControlPanel',
@@ -116,7 +117,7 @@ export default {
     }
   },
   mounted() {
-    this._unsubscribeMarvinSmiles = onSmilesChange((smiles) => {
+    this._unsubscribeMarvinSmiles = SmilesCommunicator.subscribe((smiles) => {
       this.smilesValue = smiles;
     });
   },
@@ -283,10 +284,7 @@ export default {
     },
 
     handleHNMR() {
-      if (this.smilesValue) {
-        const searchUrl = `https://www.nmrdb.org/new_predictor/index.shtml?v=latest&smiles=${encodeURIComponent(this.smilesValue)}`;
-        window.open(searchUrl, '_blank');
-      }
+      openHNMRPrediction(this.smilesValue);
     },
 
     loadExample(event) {
@@ -341,13 +339,6 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
-
-    handle3DView() {
-      if (!this.smilesValue) {
-        return;
-      }
-      this.$emit('show-3d', this.smilesValue);
     },
 
     async handleGetDrugBank() {
@@ -532,7 +523,7 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 740px;
+  max-width: 703px;
   gap: 4px;
 }
 
@@ -558,7 +549,7 @@ export default {
   gap: 4px;
   flex-wrap: wrap;
   width: 100%;
-  max-width: 740px;
+  max-width: 703px;
 }
 
 /* Button and select styles */
@@ -587,7 +578,7 @@ export default {
   z-index: 9999;
 }
 
-@media screen and (max-width: 749px) {
+@media screen and (max-width: 712px) {
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
