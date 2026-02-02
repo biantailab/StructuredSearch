@@ -28,7 +28,7 @@ export default async (request, context) => {
 
       const body = await request.json();
       const longUrl = body.url;
-      if (!longUrl) return new Response("Missing URL", { status: 400 });
+      if (!longUrl) return new Response("Missing URL<br><a href='/'>Back to home</a>", { status: 400, headers: { 'Content-Type': 'text/html' } });
 
       let id = generateId(6);
       let retries = 0;
@@ -54,17 +54,17 @@ export default async (request, context) => {
   if (url.pathname.startsWith('/s/') && request.method === 'GET') {
     const id = url.pathname.split('/s/')[1];
     
-    if (!id) return new Response("Invalid ID", { status: 404 });
+    if (!id) return new Response("Invalid ID<br><a href='/'>Back to home</a>", { status: 404, headers: { 'Content-Type': 'text/html' } });
 
     try {
       const result = await sql`SELECT long_url FROM urls WHERE id = ${id}`;
       if (result.length > 0) {
         return Response.redirect(result[0].long_url, 302);
       } else {
-        return new Response("Short URL not found", { status: 404 });
+        return new Response("Short URL not found<br><a href='/'>Back to home</a>", { status: 404, headers: { 'Content-Type': 'text/html' } });
       }
     } catch (error) {
-      return new Response("Database Error", { status: 500 });
+      return new Response("Database Error<br><a href='/'>Back to home</a>", { status: 500, headers: { 'Content-Type': 'text/html' } });
     }
   }
 
