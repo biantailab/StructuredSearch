@@ -17,7 +17,7 @@ export default {
       const urlParams = new URLSearchParams(window.location.search);
       const smiles = urlParams.get('smiles');
       
-      let marvinUrl = 'marvin/editorws.html';
+      let marvinUrl = '/marvin/editorws.html';
       if (smiles) {
         marvinUrl += `?smiles=${encodeURIComponent(smiles)}`;
       }
