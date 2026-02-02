@@ -3,7 +3,7 @@ export async function onRequestGet(context) {
   const id = params.id;
 
   if (!id) {
-    return new Response("Invalid Short URL", { status: 404 });
+    return new Response("Invalid Short URL<br><a href='/'>Back to home</a>", { status: 404, headers: { 'Content-Type': 'text/html' } });
   }
 
   try {
@@ -12,9 +12,9 @@ export async function onRequestGet(context) {
     if (longUrl) {
       return Response.redirect(longUrl, 302);
     } else {
-      return new Response("Short URL not found", { status: 404 });
+      return new Response("Short URL not found<br><a href='/'>Back to home</a>", { status: 404, headers: { 'Content-Type': 'text/html' } });
     }
   } catch (error) {
-    return new Response("Database Error", { status: 500 });
+    return new Response("Database Error<br><a href='/'>Back to home</a>", { status: 500, headers: { 'Content-Type': 'text/html' } });
   }
 }
