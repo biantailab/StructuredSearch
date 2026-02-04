@@ -12,8 +12,10 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## Dependencies
 
-- [pubchem](https://pubchem.ncbi.nlm.nih.gov) - Data source
-- [molscribe](https://huggingface.co/spaces/yujieq/MolScribe) - Molecular image recognition
+- Data source
+    - [pubchem](https://pubchem.ncbi.nlm.nih.gov)
+- Molecular image recognition
+    - [molscribe](https://huggingface.co/spaces/yujieq/MolScribe)
 - Short link service
     - [cloudflare](https://www.cloudflare.com)
     - [netlify](https://netlify.com) + [neon](https://neon.com) 
@@ -34,37 +36,37 @@ Powered by [Chemaxon](https://chemaxon.com)
 
 ## Functionality
 
-- Real-time conversion of smiles and mol
+- Real-time conversion of SMILES and mol
 - URL input
-    - smiles https://structuredsearch.pages.dev/?smiles=CCCCCCCCC=O
-    - cas https://structuredsearch.pages.dev/?cas=124-19-6
-- Example:
-    - Benzyl titanium
-    - Quinine
-    - Norfloxacin
-- Image molecular image to smiles
-- Clear smiles
-- Copy smiles
-- Get:
-    - CAS
-    - IUPACName
+    - SMILES https://structuredsearch.pages.dev/?smiles=CCCCCCCCC=O
+    - CAS https://structuredsearch.pages.dev/?cas=124-19-6
+- `Example:`
+    - `Benzyl titanium`
+    - `Quinine`
+    - `Norfloxacin`
+- `Image` Convert molecular images to SMILES
+- `Clear`
+- `Copy`
+- `Get:`
+    - `CAS`
+    - `Name` IUPACName
         - If the compound exists in the PubChem database, it is acquire directly
-        - If the compound does not exist in the PubChem database, it is obtained through MarvinJS's naming service
-    - Molecular Formula
-    - (Short SMILES)Link
-    - CAS Link
-- HNMR search
-- PubChem search
-- Wikipedia search
-- DrugBank search
-    - exact
-    - fuzzy
+        - If the compound does not exist in the PubChem database, it is obtained through Marvin JS's naming service
+    - `Formula` Molecular Formula
+    - `Link` Short SMILES Link
+    - `CAS Link`
+- `HNMR`
+- `PubChem`
+- `Wikipedia`
+- `DrugBank`
+    - `exact`
+    - `fuzzy` Fuzzy, structural and similar search
 
-## Historical versions
+## Other versions
 
 - Version based on external web services [cloudflare pages](https://structuresearch.pages.dev) / [netlify pages](https://structuresearch.netlify.app)
 - Version based on internal web services [cloudflare pages](https://structursearch.pages.dev) / [netlify pages](https://structursearch.netlify.app)
 
 ## More
 
-- [KetcherSearch](https://github.com/biantailab/KetcherSearch) - Pure front-end implementation of smiles⇄mol based on Ketcher Searching for compound information from molecular structures
+- [KetcherSearch](https://github.com/biantailab/KetcherSearch) - Pure front-end implementation of SMILES⇄mol based on Ketcher Searching for compound information from molecular structures
